@@ -15,7 +15,8 @@ public class Hardware {
     DcMotor slides = null;
     Servo elbow1 = null;
     Servo elbow2 = null;
-    SlidesPosition slides_position = null;
+    Grabber grabber = null;
+    SlidesTarget slides_position = null;
     public SampleMecanumDrive drive;
 
     private Telemetry telemetry;
@@ -28,32 +29,35 @@ public class Hardware {
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         //dt = new org.firstinspires.ftc.teamcode.Drivetrain(hwMap);
 
-        slides = hwMap.get(DcMotor.class, "slides"); // expansion hub port 0
-        slides.setDirection(DcMotor.Direction.FORWARD);
+        slides = ahwMap.get(DcMotor.class, "slides"); // expansion hub port 0
+        slides.setDirection(DcMotor.Direction.REVERSE);
         slides.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         slides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        slides_position = SlidesTarget.FRONT_GROUND;
 
         elbow1 = ahwMap.get(Servo.class, "elbow1"); // control hub port 0
         elbow2 = ahwMap.get(Servo.class, "elbow2"); // control hub port 1
         elbow1.setDirection(Servo.Direction.FORWARD);
         elbow2.setDirection(Servo.Direction.REVERSE);
 
-        slides_position = SlidesPosition.FRONT_GROUND;
+        grabber = new Grabber(ahwMap);
     }
 
     //Inits hardware for opmode
     public void init() throws InterruptedException {
-        int slides_reset_position = 300;
+        int slides_reset_position = 1000;
 
+        grabber.claw.setPosition(Grabber.claw_closed);
+        Thread.sleep(250);
         slides.setTargetPosition(slides_reset_position);
         slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        slides.setPower(.4);
-        Thread.sleep(1500);
-        elbow1.setPosition(1);
-        elbow2.setPosition(1);
-        Thread.sleep(1500);
+        slides.setPower(1);
+        Thread.sleep(500);
+        elbow1.setPosition(Slides.bottom_position);
+        elbow2.setPosition(Slides.bottom_position);
+        Thread.sleep(500);
         slides.setTargetPosition(0);
-        slides.setPower(.2);
+        slides.setPower(.8);
 
         //cvUtil = new BarcodeUtil(hwMap, "Webcam1", telemetry);
         //colorFront = hardwareMap.get(NormalizedColorSensor.class, "color_front");
@@ -72,4 +76,6 @@ public class Hardware {
     public Drivetrain getDrivetrain() {
         return dt;
     }
+
+    public class DriveThread extends Thread
 }

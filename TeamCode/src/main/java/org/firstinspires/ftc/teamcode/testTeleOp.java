@@ -11,6 +11,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 //hardware
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
+import kotlin.ranges.ClosedFloatingPointRange;
+
 
 /* As of Sunday, 12/11/2022
  * TO-DO:
@@ -34,10 +36,7 @@ public class testTeleOp extends LinearOpMode {
         return x > max ? max : (Math.max(x, min));
     }
 
-    int downPosition = 0;
-    int middlePosition = 300;
-    int upPosition = 600;
-
+    static boolean smooth_controls = true;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -45,34 +44,27 @@ public class testTeleOp extends LinearOpMode {
         Hardware BigBird = new Hardware(hardwareMap, telemetry);
         Drivetrain dt = BigBird.getDrivetrain();
 
-        BigBird.init();
+        //BigBird.init();
+        BigBird.slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         waitForStart();
 
-        DrivetrainSpeedUpdateThread driveSpeed = new DrivetrainSpeedUpdateThread(dt.FL, dt.BL, dt.FR, dt.BR);
+        DrivetrainSpeedUpdateThread driveSpeed = new DrivetrainSpeedUpdateThread(BigBird, dt.FL, dt.BL, dt.FR, dt.BR);
         driveSpeed.start();
 
-        SlidesPosition slidesPosition = SlidesPosition.FRONT_GROUND;
-        MoveSlidesThread slidesThread = new MoveSlidesThread(slidesPosition, BigBird, BigBird.slides.getCurrentPosition(), slidesPosition.slides_position, BigBird.elbow1.getPosition(), slidesPosition.elbow_position);
-        slidesThread.start();
+        SlidesTarget slidesPosition = SlidesTarget.FRONT_GROUND;
 
         while (opModeIsActive()) {
             if (gamepad1.dpad_up) {
-                slidesPosition = SlidesPosition.FRONT_HIGH;
-                //slidesThread = new MoveSlidesThread(slidesPosition, BigBird, BigBird.slides.getCurrentPosition(), slidesPosition.slides_position, BigBird.elbow1.getPosition(), slidesPosition.elbow_position);
-                //slidesThread.start();
+                slidesPosition = SlidesTarget.FRONT_HIGH;
             }
             else if (gamepad1.dpad_left || gamepad1.dpad_right) {
-                slidesPosition = SlidesPosition.FRONT_MIDDLE;
-                //slidesThread = new MoveSlidesThread(slidesPosition, BigBird, BigBird.slides.getCurrentPosition(), slidesPosition.slides_position, BigBird.elbow1.getPosition(), slidesPosition.elbow_position);
-                //slidesThread.start();
+                slidesPosition = SlidesTarget.FRONT_MIDDLE;
             }
             else if (gamepad1.dpad_down) {
-                slidesPosition = (slidesPosition == SlidesPosition.FRONT_LOW) ? SlidesPosition.FRONT_GROUND : SlidesPosition.FRONT_LOW;
-                //slidesThread = new MoveSlidesThread(slidesPosition, BigBird, BigBird.slides.getCurrentPosition(), slidesPosition.slides_position, BigBird.elbow1.getPosition(), slidesPosition.elbow_position);
-                //slidesThread.start();
+                slidesPosition = (slidesPosition == SlidesTarget.FRONT_LOW) ? SlidesTarget.FRONT_GROUND : SlidesTarget.FRONT_LOW;
             }
             if (BigBird.slides.getCurrentPosition() > slidesPosition.slides_position) {
-                BigBird.slides.setPower(.2);
+                BigBird.slides.setPower(.8);
             }
             else if (BigBird.slides.getCurrentPosition() < slidesPosition.slides_position) {
                 BigBird.slides.setPower(1);
@@ -82,22 +74,64 @@ public class testTeleOp extends LinearOpMode {
             }
             BigBird.slides.setTargetPosition(slidesPosition.slides_position);
 
-            telemetry.addData("Elbow 1 position: ", BigBird.elbow1.getPosition());
+            if (gamepad1.left_bumper) {
+                smooth_controls = true;
+            }
+            else if (gamepad1.right_bumper) {
+                smooth_controls = false;
+            }
+
+            if (gamepad1.a) {
+                //BigBird.grabber.openClaw();
+                BigBird.grabber.claw.setPosition((BigBird.grabber.claw.getPosition() == 1) ? 1 : BigBird.grabber.claw.getPosition()+.01);
+                Thread.sleep(10);
+            }
+            else if (gamepad1.b) {
+                //BigBird.grabber.closeClaw();
+                BigBird.grabber.claw.setPosition((BigBird.grabber.claw.getPosition() == 0) ? 0 : BigBird.grabber.claw.getPosition()-.01);
+                Thread.sleep(10);
+            }
+            if (gamepad1.x) {
+                BigBird.grabber.flipGrabberFace();
+            }
+            else if (gamepad1.y) {
+                BigBird.grabber.rightGrabberFace();
+            }
+
+            telemetry.addData("claw position: ", BigBird.grabber.claw.getPosition());
             telemetry.addData("Slides: ", BigBird.slides.getCurrentPosition());
             telemetry.addData("Slides position: ", slidesPosition.name);
             telemetry.update();
         }
-        slidesThread.interrupt();
     }
+
+    /*
+     * TO-DO: make independent thread to operate claw, or otherwise make it work
+    public class ClawOperatorThread extends Thread {
+
+        Hardware BigBird;
+        public ClawOperatorThread(Hardware BigBird) {
+
+        }
+
+        @Override
+        public void run() {
+            if (BigBird.grabber.claw.getPosition() == )
+        }
+    }
+
+     */
 
     public class DrivetrainSpeedUpdateThread extends Thread {
 
+        Hardware BigBird;
         DcMotor FL;
         DcMotor BL;
         DcMotor FR;
         DcMotor BR;
 
-        public DrivetrainSpeedUpdateThread(DcMotor m1, DcMotor m2, DcMotor m3, DcMotor m4) {
+        public DrivetrainSpeedUpdateThread(Hardware BigBird, DcMotor m1, DcMotor m2, DcMotor m3, DcMotor m4) {
+            this.BigBird = BigBird;
             FL = m1;
             BL = m2;
             FR = m3;
@@ -125,53 +159,17 @@ public class testTeleOp extends LinearOpMode {
                 double FRTargetSpeed = clamp(y - x - rx, -1, 1);
                 double BRTargetSpeed = clamp(y + x - rx, -1, 1);
 
-                adjustMotorPower(FL, FLTargetSpeed, speedIncrement);
-                adjustMotorPower(BL, BLTargetSpeed, speedIncrement);
-                adjustMotorPower(FR, FRTargetSpeed, speedIncrement);
-                adjustMotorPower(BR, BRTargetSpeed, speedIncrement);
+                if (smooth_controls) {
+                    adjustMotorPower(FL, FLTargetSpeed, speedIncrement);
+                    adjustMotorPower(BL, BLTargetSpeed, speedIncrement);
+                    adjustMotorPower(FR, FRTargetSpeed, speedIncrement);
+                    adjustMotorPower(BR, BRTargetSpeed, speedIncrement);
+                }
+                else {
+                    setMotorPowers(BigBird, FLTargetSpeed, BLTargetSpeed, FRTargetSpeed, BRTargetSpeed);
+                }
 
                 try {Thread.sleep(5);} catch (InterruptedException e) {e.printStackTrace();}
-            }
-        }
-    }
-
-    public static class MoveSlidesThread extends Thread {
-
-        SlidesPosition slidesPosition;
-        DcMotor slides = null;
-        Servo elbow1 = null;
-        Servo elbow2 = null;
-        int slides_starting_position = 0;
-        int slides_target_position = 0;
-        double elbow_starting_position = 0;
-        double elbow_target_position = 0;
-
-        public MoveSlidesThread(SlidesPosition sp, Hardware BigBird, int ssp, int tsp, double sep, double tep) {
-            slidesPosition = sp;
-            slides = BigBird.slides;
-            elbow1 = BigBird.elbow1;
-            elbow2 = BigBird.elbow2;
-            slides_starting_position = ssp;
-            slides_target_position = tsp;
-            elbow_starting_position = sep;
-            elbow_target_position = tep;
-        }
-
-        @Override
-        public void run() {
-            slides.setTargetPosition(slides_target_position);
-            if (slides_starting_position < slides_target_position) {
-                slides.setPower(.4);
-                try {Thread.sleep(250);} catch (InterruptedException ignored) {}
-                elbow1.setPosition(elbow_target_position);
-                elbow2.setPosition(elbow_target_position);
-            }
-            else if (slides_starting_position > slides_target_position) {
-                slides.setPower(0);
-                elbow1.setPosition(elbow_target_position);
-                elbow2.setPosition(elbow_target_position);
-                try {Thread.sleep(250);} catch (InterruptedException ignored) {}
-                slides.setPower(.4);
             }
         }
     }
@@ -183,5 +181,12 @@ public class testTeleOp extends LinearOpMode {
         } else if (speed < targetSpeed) {
             motor.setPower((speed < targetSpeed - speedIncrement) ? speed + speedIncrement : targetSpeed);
         }
+    }
+
+    public static void setMotorPowers(Hardware BigBird, double FLspeed, double BLspeed, double FRspeed, double BRspeed) {
+        BigBird.dt.FL.setPower(FLspeed);
+        BigBird.dt.FR.setPower(FRspeed);
+        BigBird.dt.BL.setPower(BLspeed);
+        BigBird.dt.BR.setPower(BRspeed);
     }
 }

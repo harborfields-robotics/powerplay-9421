@@ -10,7 +10,7 @@ package org.firstinspires.ftc.teamcode;
  * Also, these servo values have not been tested, they are just estimations of where the elbow should go with the current limits (12/21/22)
  */
 
-public enum SlidesPosition {
+public enum SlidesTarget {
     BACK_GROUND(0, 0.0, false, "back ground"),
     BACK_LOW(0, 0.0, false, "back low"),
     BACK_MIDDLE(300, 0.2, false, "back middle"),
@@ -25,8 +25,8 @@ public enum SlidesPosition {
     public final boolean front;
     public final String name;
 
-    SlidesPosition(int s, double e, boolean f, String n) {
-        slides_position = s;
+    SlidesTarget(int s, double e, boolean f, String n) {
+        slides_position = s*4; // x4 for gear ratio
         elbow_position  = e;
         front = f;
         name = n;

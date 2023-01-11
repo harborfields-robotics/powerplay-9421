@@ -11,6 +11,7 @@ public class Drivetrain {
     public DcMotor FR;
     public DcMotor BL;
     public DcMotor BR;
+    static int ticks_per_tile = 1000; // constant for strafe methods
 
     // initializes motors
     public Drivetrain(HardwareMap ahwMap){
@@ -39,6 +40,13 @@ public class Drivetrain {
         BR.setPower(br);
     }
 
+    public void setMotorTargets(int fl, int fr, int bl, int br){
+        FL.setTargetPosition(fl);
+        FR.setTargetPosition(fr);
+        BL.setTargetPosition(bl);
+        BR.setTargetPosition(br);
+    }
+
     //sets power for motors based on normalized powers
     public void setMotorPower(double[]powers){
         FL.setPower(powers[0]);
@@ -55,5 +63,34 @@ public class Drivetrain {
             powers[3] /= powers[3];
         }
         return powers;
+    }
+
+    public void strafeLeft(double num_tiles, double power) {
+        setMotorTargets(FL.getTargetPosition() - (int)((num_tiles * ticks_per_tile)),
+                        FR.getTargetPosition() + (int)((num_tiles * ticks_per_tile)),
+                        BL.getTargetPosition() + (int)((num_tiles * ticks_per_tile)),
+                        BR.getTargetPosition() - (int)((num_tiles * ticks_per_tile)));
+        setMotorPower(power, power, power, power);
+    }
+    public void strafeRight(double num_tiles, double power) {
+        setMotorTargets(FL.getTargetPosition() + (int)((num_tiles * ticks_per_tile)),
+                        FR.getTargetPosition() - (int)((num_tiles * ticks_per_tile)),
+                        BL.getTargetPosition() - (int)((num_tiles * ticks_per_tile)),
+                        BR.getTargetPosition() + (int)((num_tiles * ticks_per_tile)));
+        setMotorPower(power, power, power, power);
+    }
+    public void driveForward(double num_tiles, double power) {
+        setMotorTargets(FL.getTargetPosition() + (int)((num_tiles * ticks_per_tile)),
+                        FR.getTargetPosition() + (int)((num_tiles * ticks_per_tile)),
+                        BL.getTargetPosition() + (int)((num_tiles * ticks_per_tile)),
+                        BR.getTargetPosition() + (int)((num_tiles * ticks_per_tile)));
+        setMotorPower(power, power, power, power);
+    }
+    public void driveBackward(double num_tiles, double power) {
+        setMotorTargets(FL.getTargetPosition() - (int)((num_tiles * ticks_per_tile)),
+                FR.getTargetPosition() - (int)((num_tiles * ticks_per_tile)),
+                BL.getTargetPosition() - (int)((num_tiles * ticks_per_tile)),
+                BR.getTargetPosition() - (int)((num_tiles * ticks_per_tile)));
+        setMotorPower(power, power, power, power);
     }
 }

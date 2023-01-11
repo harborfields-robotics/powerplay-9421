@@ -4,10 +4,10 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.Servo;
 
 //import org.firstinspires.ftc.teamcode.robot.CV.BarcodePositionDetector;
 //import org.firstinspires.ftc.teamcode.robot.DEPOSIT_LINEAR;
-import org.firstinspires.ftc.teamcode.Hardware;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 @Autonomous
@@ -102,7 +102,7 @@ public class testAuto extends LinearOpMode {
 
         Oscar.drive.followTrajectorySequence(autoTrajectory1);
 
-      //  Oscar.grabber.carousellOn();
+        //  Oscar.grabber.carousellOn();
 
         Thread.sleep(5000);
 

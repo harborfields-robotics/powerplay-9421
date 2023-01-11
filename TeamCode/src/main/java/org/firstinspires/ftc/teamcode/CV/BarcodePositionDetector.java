@@ -9,10 +9,13 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 
+import java.util.ArrayList;
+
 public class BarcodePositionDetector extends OpenCvPipeline {
 
     Telemetry telemetry;
     Mat mat = new Mat( );
+    ArrayList<Mat> mats = new ArrayList<Mat>();
 
     public enum BarcodePosition {
         LEFT,
@@ -41,18 +44,20 @@ public class BarcodePositionDetector extends OpenCvPipeline {
 
     public Mat processFrame( Mat input, String type ) {
         //chNgwe
-        Imgproc.cvtColor( input, mat,  Imgproc.COLOR_RGB2HSV_FULL);
+//      Imgproc.cvtColor( input, mat,  Imgproc.COLOR_RGB2HSV_FULL);
         Scalar lowHSV;
         Scalar highHSV;
 
-        if( type.equalsIgnoreCase( "duck" ) ) {
-            lowHSV = new Scalar(20, 100, 100 );//25, 25, 35
-            highHSV = new Scalar( 30, 255, 255 );
+        Core.split(input, mats);
+
+       /* if( type.equalsIgnoreCase( "duck" ) ) {
+            lowHSV = new Scalar(20, 100, 100);//25, 25, 35
+            highHSV = new Scalar(30, 255, 255);
         } else {
             lowHSV = new Scalar( 40, 50, 70 );
             highHSV = new Scalar( 65, 255, 255 );
-        }
-        Core.inRange( mat, lowHSV, highHSV, mat );
+        } */
+ /*       Core.inRange( mat, lowHSV, highHSV, mat );
 
         Mat left = mat.submat( LEFT_ROI );
         Mat middle = mat.submat( MIDDLE_ROI );
@@ -66,9 +71,15 @@ public class BarcodePositionDetector extends OpenCvPipeline {
         middle.release( );
         right.release( );
 
-        boolean leftBool = leftValue > PERCENT_COLOR_THRESHOLD;
-        boolean middleBool = middleValue > PERCENT_COLOR_THRESHOLD;
-        boolean rightBool = rightValue > PERCENT_COLOR_THRESHOLD;
+*/
+
+        Scalar rAvg = Core.mean(mats.get(0));
+        Scalar gAvg = Core.mean(mats.get(1));
+        Scalar bAvg = Core.mean(mats.get(2));
+        // one dot left, three dot right
+        boolean leftBool = bAvg.val[0] > gAvg.val[0] && bAvg.val[0] > rAvg.val[0];
+        boolean middleBool = gAvg.val[0] > bAvg.val[0] && gAvg.val[0] > rAvg.val[0];
+        boolean rightBool = rAvg.val[0] > bAvg.val[0] && rAvg.val[0] > gAvg.val[0];
 
         if( rightBool ) {
             barcodePosition = BarcodePosition.RIGHT;
