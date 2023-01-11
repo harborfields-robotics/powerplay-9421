@@ -94,14 +94,14 @@ public class BarcodePositionDetector extends OpenCvPipeline {
             barcodePosition = BarcodePosition.NOT_FOUND;
             telemetry.addData( "Location", type + " not found" );
         }
-        Imgproc.cvtColor( mat, mat, Imgproc.COLOR_GRAY2RGB );
+    //    Imgproc.cvtColor( mat, mat, Imgproc.COLOR_GRAY2RGB );
 
         Scalar elementColor = new Scalar( 22, 203, 172 );
-        Scalar notElement = new Scalar( 0, 255, 0 );
+       Scalar notElement = new Scalar( 0, 255, 0 );
 
-        Imgproc.rectangle( mat, LEFT_ROI, barcodePosition == BarcodePosition.LEFT ? notElement : elementColor );
-        Imgproc.rectangle( mat, RIGHT_ROI, barcodePosition == BarcodePosition.RIGHT ? notElement : elementColor );
-        Imgproc.rectangle( mat, MIDDLE_ROI, barcodePosition == BarcodePosition.MIDDLE ? notElement : elementColor );
+   //     Imgproc.rectangle( mat, LEFT_ROI, barcodePosition == BarcodePosition.LEFT ? notElement : elementColor );
+     //   Imgproc.rectangle( mat, RIGHT_ROI, barcodePosition == BarcodePosition.RIGHT ? notElement : elementColor );
+       // Imgproc.rectangle( mat, MIDDLE_ROI, barcodePosition == BarcodePosition.MIDDLE ? notElement : elementColor );
         return mat;
     }
 

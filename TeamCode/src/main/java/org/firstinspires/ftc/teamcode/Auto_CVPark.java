@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.CV.BarcodePositionDetector;
+
 @Autonomous
 public class Auto_CVPark extends LinearOpMode {
 
@@ -12,10 +14,15 @@ public class Auto_CVPark extends LinearOpMode {
         Hardware BigBird = new Hardware(hardwareMap, telemetry);
         BigBird.init();
         waitForStart();
+        BigBird.cvUtil.init();
 
-        boolean one_dot = false;
-        boolean two_dot = false;
-        boolean three_dot = false;
+        BarcodePositionDetector.BarcodePosition barcodePosition;
+        barcodePosition = BigBird.cvUtil.getBarcodePosition();
+        telemetry.addData("Barcode position", barcodePosition);
+
+        boolean one_dot = barcodePosition == BarcodePositionDetector.BarcodePosition.LEFT;
+        boolean two_dot = barcodePosition == BarcodePositionDetector.BarcodePosition.MIDDLE;
+        boolean three_dot = barcodePosition == BarcodePositionDetector.BarcodePosition.RIGHT;
 
         // start of program running
 

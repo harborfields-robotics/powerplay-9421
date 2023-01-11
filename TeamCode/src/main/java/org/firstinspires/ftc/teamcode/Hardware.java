@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.CV.BarcodeUtil;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 // import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
@@ -18,6 +19,8 @@ public class Hardware {
     Grabber grabber = null;
     SlidesTarget slides_position = null;
     public SampleMecanumDrive drive;
+    BarcodeUtil cvUtil;
+
 
     private Telemetry telemetry;
 
@@ -77,5 +80,4 @@ public class Hardware {
         return dt;
     }
 
-    public class DriveThread extends Thread
 }

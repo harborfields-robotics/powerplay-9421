@@ -174,6 +174,15 @@ public class testTeleOp extends LinearOpMode {
         }
     }
 
+    public class SlidesThread extends Thread {
+
+        Hardware BigBird;
+        DcMotor slides;
+
+
+    }
+
+
     public static void adjustMotorPower(DcMotor motor, double targetSpeed, double speedIncrement) {
         double speed = motor.getPower();
         if (speed > targetSpeed) {
