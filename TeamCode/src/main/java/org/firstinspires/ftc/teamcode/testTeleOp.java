@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.Hardware.slidesPosition;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -51,28 +53,10 @@ public class testTeleOp extends LinearOpMode {
         DrivetrainSpeedUpdateThread driveSpeed = new DrivetrainSpeedUpdateThread(BigBird, dt.FL, dt.BL, dt.FR, dt.BR);
         driveSpeed.start();
 
-        SlidesTarget slidesPosition = SlidesTarget.FRONT_GROUND;
+        SlidesThread slidesThread = new SlidesThread(BigBird);
+        slidesThread.start();
 
         while (opModeIsActive()) {
-            if (gamepad1.dpad_up) {
-                slidesPosition = SlidesTarget.FRONT_HIGH;
-            }
-            else if (gamepad1.dpad_left || gamepad1.dpad_right) {
-                slidesPosition = SlidesTarget.FRONT_MIDDLE;
-            }
-            else if (gamepad1.dpad_down) {
-                slidesPosition = (slidesPosition == SlidesTarget.FRONT_LOW) ? SlidesTarget.FRONT_GROUND : SlidesTarget.FRONT_LOW;
-            }
-            if (BigBird.slides.getCurrentPosition() > slidesPosition.slides_position) {
-                BigBird.slides.setPower(.8);
-            }
-            else if (BigBird.slides.getCurrentPosition() < slidesPosition.slides_position) {
-                BigBird.slides.setPower(1);
-            }
-            else if (BigBird.slides.getCurrentPosition() == slidesPosition.slides_position) {
-                BigBird.slides.setPower(0);
-            }
-            BigBird.slides.setTargetPosition(slidesPosition.slides_position);
 
             if (gamepad1.left_bumper) {
                 smooth_controls = true;
@@ -100,7 +84,6 @@ public class testTeleOp extends LinearOpMode {
 
             telemetry.addData("claw position: ", BigBird.grabber.claw.getPosition());
             telemetry.addData("Slides: ", BigBird.slides.getCurrentPosition());
-            telemetry.addData("Slides position: ", slidesPosition.name);
             telemetry.update();
         }
     }
@@ -175,10 +158,38 @@ public class testTeleOp extends LinearOpMode {
     }
 
     public class SlidesThread extends Thread {
-
         Hardware BigBird;
         DcMotor slides;
+        SlidesTarget slidesPosition = Hardware.slidesPosition;
 
+        public SlidesThread(Hardware BigBird) {
+            this.BigBird = BigBird;
+            slides = BigBird.slides;
+        }
+
+        public void run() {
+            while (opModeIsActive()) {
+                if (gamepad1.dpad_up) {
+                    slidesPosition = SlidesTarget.FRONT_HIGH;
+                }
+                else if (gamepad1.dpad_left || gamepad1.dpad_right) {
+                    slidesPosition = SlidesTarget.FRONT_MIDDLE;
+                }
+                else if (gamepad1.dpad_down) {
+                    slidesPosition = (slidesPosition == SlidesTarget.FRONT_LOW) ? SlidesTarget.FRONT_GROUND : SlidesTarget.FRONT_LOW;
+                }
+                if (BigBird.slides.getCurrentPosition() > slidesPosition.slides_position) {
+                    BigBird.slides.setPower(.8);
+                }
+                else if (BigBird.slides.getCurrentPosition() < slidesPosition.slides_position) {
+                    BigBird.slides.setPower(1);
+                }
+                else if (BigBird.slides.getCurrentPosition() == slidesPosition.slides_position) {
+                    BigBird.slides.setPower(0);
+                }
+                BigBird.slides.setTargetPosition(slidesPosition.slides_position);
+            }
+        }
 
     }
 

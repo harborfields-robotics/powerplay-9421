@@ -17,7 +17,7 @@ public class Hardware {
     Servo elbow1 = null;
     Servo elbow2 = null;
     Grabber grabber = null;
-    SlidesTarget slides_position = null;
+    public static SlidesTarget slidesPosition = null;
     public SampleMecanumDrive drive;
     BarcodeUtil cvUtil;
 
@@ -27,16 +27,18 @@ public class Hardware {
     public Hardware(HardwareMap ahwMap, Telemetry telemetry) {
         hwMap = ahwMap;
         this.telemetry = telemetry;
-        dt = new Drivetrain(ahwMap);
+        dt = new Drivetrain(ahwMap, telemetry);
         drive = new SampleMecanumDrive(ahwMap);
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        cvUtil = new BarcodeUtil(hwMap, "Webcam1", telemetry);
+
         //dt = new org.firstinspires.ftc.teamcode.Drivetrain(hwMap);
 
         slides = ahwMap.get(DcMotor.class, "slides"); // expansion hub port 0
         slides.setDirection(DcMotor.Direction.REVERSE);
         slides.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         slides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        slides_position = SlidesTarget.FRONT_GROUND;
+        slidesPosition = SlidesTarget.FRONT_GROUND;
 
         elbow1 = ahwMap.get(Servo.class, "elbow1"); // control hub port 0
         elbow2 = ahwMap.get(Servo.class, "elbow2"); // control hub port 1
@@ -48,6 +50,7 @@ public class Hardware {
 
     //Inits hardware for opmode
     public void init() throws InterruptedException {
+        /*
         int slides_reset_position = 1000;
 
         grabber.claw.setPosition(Grabber.claw_closed);
@@ -72,6 +75,8 @@ public class Hardware {
         //drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         //vel = new Pose2d(0,0,0);
+
+         */
 
 
     }
