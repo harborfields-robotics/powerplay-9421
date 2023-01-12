@@ -14,9 +14,9 @@ public class Auto_CVPark extends LinearOpMode {
         Hardware BigBird = new Hardware(hardwareMap, telemetry);
         BigBird.init();
         waitForStart();
-        //BigBird.cvUtil.init();
+        BigBird.cvUtil.init();
 
-        /*
+
         BarcodePositionDetector.BarcodePosition barcodePosition;
         barcodePosition = BigBird.cvUtil.getBarcodePosition();
         telemetry.addData("Barcode position", barcodePosition);
@@ -24,10 +24,10 @@ public class Auto_CVPark extends LinearOpMode {
         boolean one_dot = barcodePosition == BarcodePositionDetector.BarcodePosition.LEFT;
         boolean two_dot = barcodePosition == BarcodePositionDetector.BarcodePosition.MIDDLE;
         boolean three_dot = barcodePosition == BarcodePositionDetector.BarcodePosition.RIGHT;
-         */
 
-        boolean one_dot = true; // for testing
-        boolean two_dot = false; // for testing
+
+  //      boolean one_dot = true; // for testing
+    //    boolean two_dot = false; // for testing
 
 
         // start of program running

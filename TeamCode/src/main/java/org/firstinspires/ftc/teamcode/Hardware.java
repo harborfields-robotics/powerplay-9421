@@ -77,8 +77,6 @@ public class Hardware {
         //vel = new Pose2d(0,0,0);
 
          */
-
-
     }
 
     public Drivetrain getDrivetrain() {
