@@ -85,4 +85,6 @@ public class Hardware {
         return dt;
     }
 
+	// TODO: this class was empty and causing issues with compilation
+    public class DriveThread extends Thread {}
 }
