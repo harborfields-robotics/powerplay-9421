@@ -94,7 +94,7 @@ public class ElementDetector extends OpenCvPipeline {
      */
     void inputToCb(Mat input)
     {
-        Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
+     //   Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
         Core.extractChannel(YCrCb, Cb, 2);
     }
 
