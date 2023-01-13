@@ -45,6 +45,7 @@ public class BarcodePositionDetector extends OpenCvPipeline {
     public Mat processFrame( Mat input, String type ) {
         //chNgwe
 //      Imgproc.cvtColor( input, mat,  Imgproc.COLOR_RGB2HSV_FULL);
+        telemetry.addData("||Image||^2", input.dot(input));
         Scalar lowHSV;
         Scalar highHSV;
 
@@ -105,6 +106,7 @@ public class BarcodePositionDetector extends OpenCvPipeline {
         return mat;
     }
 
+	/*
     @Override
     public Mat processFrame( Mat input ) {
 
@@ -116,6 +118,7 @@ public class BarcodePositionDetector extends OpenCvPipeline {
             return duckImage;
         return elementImage;
     }
+	*/
 
     public BarcodePosition getBarcodePosition( ) {
         return barcodePosition;

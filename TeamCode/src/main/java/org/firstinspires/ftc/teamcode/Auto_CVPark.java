@@ -16,7 +16,6 @@ public class Auto_CVPark extends LinearOpMode {
         waitForStart();
         BigBird.cvUtil.init();
 
-
         BarcodePositionDetector.BarcodePosition barcodePosition;
         barcodePosition = BigBird.cvUtil.getBarcodePosition();
         telemetry.addData("Barcode position", barcodePosition);
