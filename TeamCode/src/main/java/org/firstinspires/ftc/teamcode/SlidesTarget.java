@@ -11,10 +11,10 @@ package org.firstinspires.ftc.teamcode;
  */
 
 public enum SlidesTarget {
-    BACK_GROUND(0, 0.0, false, "back ground"),
-    BACK_LOW(0, 0.0, false, "back low"),
-    BACK_MIDDLE(300, 0.2, false, "back middle"),
-    BACK_HIGH(600, 0.3, false, "back high"),
+    //BACK_GROUND(0, 0.0, false, "back ground"),
+    //BACK_LOW(0, 0.0, false, "back low"),
+    BACK_MIDDLE(0, 0, false, "back middle"),
+    BACK_HIGH(600, 0.15, false, "back high"),
     FRONT_GROUND(0, 1.0, true, "front ground"),
     FRONT_LOW(0, 0.65, true, "front low"),
     FRONT_MIDDLE(300, 0.5, true, "front middle"),

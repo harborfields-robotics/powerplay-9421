@@ -50,20 +50,26 @@ public class Hardware {
 
     //Inits hardware for opmode
     public void init() throws InterruptedException {
-        /*
+
         int slides_reset_position = 1000;
 
-        grabber.claw.setPosition(Grabber.claw_closed);
+        grabber.closeClaw();
         Thread.sleep(250);
         slides.setTargetPosition(slides_reset_position);
         slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        slides.setPower(1);
+        slides.setPower(.4);
         Thread.sleep(500);
-        elbow1.setPosition(Slides.bottom_position);
-        elbow2.setPosition(Slides.bottom_position);
+        elbow1.setPosition(SlidesTarget.FRONT_GROUND.elbow_position);
+        elbow2.setPosition(SlidesTarget.FRONT_GROUND.elbow_position);
         Thread.sleep(500);
         slides.setTargetPosition(0);
-        slides.setPower(.8);
+        slides.setPower(.4);
+        telemetry.addData("claw: ", grabber.claw.getPosition());
+        telemetry.addData("wrist: ", grabber.wrist.getPosition());
+        telemetry.addData("slides: ", slides.getCurrentPosition());
+        telemetry.addData("elbow: ", elbow1.getPosition());
+
+
 
         //cvUtil = new BarcodeUtil(hwMap, "Webcam1", telemetry);
         //colorFront = hardwareMap.get(NormalizedColorSensor.class, "color_front");
@@ -76,7 +82,7 @@ public class Hardware {
 
         //vel = new Pose2d(0,0,0);
 
-         */
+
     }
 
     public Drivetrain getDrivetrain() {

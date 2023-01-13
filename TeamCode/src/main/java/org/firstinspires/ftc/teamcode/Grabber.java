@@ -7,40 +7,37 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class Grabber {
 
     public Servo claw;
-    public Servo left_wrist;
-    public Servo right_wrist;
+    public Servo wrist;
     public static double claw_open = 0;
-    public static double claw_closed = 0.2;
-    public static double upright = 1;
-    public static double upside_down = 0.5;
-    boolean closed;
+    public static double claw_closed = 1;
+    public static double upright = 0;
+    public static double upside_down = 1;
+    boolean isClosed;
     boolean isFlipped;
 
     // initializes motors & servos
     public Grabber(HardwareMap ahwMap) {
         claw = ahwMap.get(Servo.class, "claw"); // control hub port ?
-        left_wrist = ahwMap.get(Servo.class, "left wrist"); // control hub port ?
-        right_wrist = ahwMap.get(Servo.class, "right wrist"); // control hub port ?
+        wrist = ahwMap.get(Servo.class, "claw face"); // control hub port ?
         claw.setDirection(Servo.Direction.REVERSE);
-        closed = false;
+        wrist.setDirection(Servo.Direction.REVERSE);
+        isClosed = false;
     }
 
     public void closeClaw() {
         claw.setPosition(claw_closed);
-        closed = true;
+        isClosed = true;
     }
     public void openClaw() {
         claw.setPosition(claw_open);
-        closed = false;
+        isClosed = false;
     }
     public void flipGrabberFace() {
-        left_wrist.setPosition(upside_down);
-        right_wrist.setPosition(upside_down);
+        wrist.setPosition(upside_down);
         isFlipped = true;
     }
     public void rightGrabberFace() {
-        left_wrist.setPosition(upright);
-        right_wrist.setPosition(upright);
+        wrist.setPosition(upright);
         isFlipped = false;
     }
 

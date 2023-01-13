@@ -32,7 +32,7 @@ import kotlin.ranges.ClosedFloatingPointRange;
 
 
 @TeleOp
-public class testTeleOp extends LinearOpMode {
+public class tuningTeleOp extends LinearOpMode {
 
     public double clamp(double x, double min, double max) {
         return x > max ? max : (Math.max(x, min));
@@ -46,19 +46,36 @@ public class testTeleOp extends LinearOpMode {
         Hardware BigBird = new Hardware(hardwareMap, telemetry);
         Drivetrain dt = BigBird.getDrivetrain();
 
-        BigBird.init();
+        //BigBird.init();
+        BigBird.slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         waitForStart();
 
         DrivetrainSpeedUpdateThread driveSpeed = new DrivetrainSpeedUpdateThread(BigBird, dt.FL, dt.BL, dt.FR, dt.BR);
         driveSpeed.start();
 
-        SlidesThread slidesThread = new SlidesThread(BigBird);
-        slidesThread.start();
+        //SlidesThread slidesThread = new SlidesThread(BigBird);
+        //slidesThread.start();
 
         GrabberThread grabberThread = new GrabberThread(BigBird);
         grabberThread.start();
 
         while (opModeIsActive()) {
+
+            if (gamepad1.dpad_up && BigBird.slides.getCurrentPosition() < SlidesTarget.FRONT_HIGH.slides_position) {
+                BigBird.slides.setTargetPosition(BigBird.slides.getTargetPosition()+1);
+            }
+            else if (gamepad1.dpad_down && BigBird.slides.getCurrentPosition() > 0) {
+                BigBird.slides.setTargetPosition(BigBird.slides.getTargetPosition()-1);
+            }
+
+            if (gamepad1.dpad_left && BigBird.elbow1.getPosition() > 0 && BigBird.elbow2.getPosition() > 0) {
+                BigBird.elbow1.setPosition(BigBird.elbow1.getPosition() - .01);
+                BigBird.elbow2.setPosition(BigBird.elbow2.getPosition() - .01);
+            }
+            else if(gamepad1.dpad_right && BigBird.elbow1.getPosition() < 1 && BigBird.elbow2.getPosition() < 1) {
+                BigBird.elbow1.setPosition(BigBird.elbow2.getPosition() + .01);
+                BigBird.elbow2.setPosition(BigBird.elbow1.getPosition() + .01);
+            }
 
             if (gamepad1.left_bumper) {
                 smooth_controls = true;
@@ -71,7 +88,6 @@ public class testTeleOp extends LinearOpMode {
             telemetry.addData("wrist position: ", BigBird.grabber.wrist.getPosition());
             telemetry.addData("slides: ", BigBird.slides.getCurrentPosition());
             telemetry.addData("elbow: ", BigBird.elbow1.getPosition());
-
             telemetry.update();
         }
     }
@@ -149,6 +165,7 @@ public class testTeleOp extends LinearOpMode {
         Hardware BigBird;
         DcMotor slides;
         SlidesTarget slidesPosition = null;
+        int slides_encoder_target = 0;
 
         public SlidesThread(Hardware BigBird) {
             this.BigBird = BigBird;
@@ -158,27 +175,22 @@ public class testTeleOp extends LinearOpMode {
 
         public void run() {
             while (opModeIsActive()) {
-                if (gamepad1.dpad_up) {
-                    slidesPosition = SlidesTarget.FRONT_HIGH;
+                if (gamepad1.dpad_up && slides_encoder_target < 2500) {
+                    slides_encoder_target += 1;
                 }
-                else if (gamepad1.dpad_left || gamepad1.dpad_right) {
-                    slidesPosition = SlidesTarget.FRONT_MIDDLE;
-                }
-                else if (gamepad1.dpad_down) {
-                    slidesPosition = (slidesPosition == SlidesTarget.FRONT_LOW) ? SlidesTarget.FRONT_GROUND : SlidesTarget.FRONT_LOW;
+                else if (gamepad1.dpad_down && slides_encoder_target > 0) {
+                    slides_encoder_target -= 1;
                 }
                 if (BigBird.slides.getCurrentPosition() > slidesPosition.slides_position) {
-                    BigBird.slides.setPower(.8);
+                    BigBird.slides.setPower(.3);
                 }
                 else if (BigBird.slides.getCurrentPosition() < slidesPosition.slides_position) {
-                    BigBird.slides.setPower(1);
+                    BigBird.slides.setPower(.4);
                 }
                 else if (BigBird.slides.getCurrentPosition() == slidesPosition.slides_position) {
                     BigBird.slides.setPower(0);
                 }
-                BigBird.slides.setTargetPosition(slidesPosition.slides_position);
-                BigBird.elbow1.setPosition(slidesPosition.elbow_position);
-                BigBird.elbow2.setPosition(slidesPosition.elbow_position);
+                BigBird.slides.setTargetPosition(slides_encoder_target);
             }
         }
 
@@ -194,37 +206,20 @@ public class testTeleOp extends LinearOpMode {
         }
 
         public void run() {
-            boolean claw_changed = false; //Outside of loop()
-            boolean wrist_changed = false;
             while (opModeIsActive()) {
 
-                // Toggle x button to open/close claw
-                if (gamepad1.x && !claw_changed) {
-                    if(grabber.isClosed) {
-                        grabber.openClaw();
-                    }
-                    else {
-                        grabber.closeClaw();
-                    }
-                    claw_changed = true;
-                } else if (!gamepad1.x) {
-                    claw_changed = false;
+                if (gamepad1.x) {
+                    grabber.claw.setPosition(Math.min(grabber.claw.getPosition()+.01, 1));
                 }
-
-                // Toggle y button to flip grabber
-                if (gamepad1.y && !wrist_changed) {
-                    if (grabber.isFlipped) {
-                        grabber.rightGrabberFace();
-                    }
-                    else {
-                        grabber.flipGrabberFace();
-                    }
-                    wrist_changed = true;
-                } else if (!gamepad1.y) {
-                    wrist_changed = false;
+                if (gamepad1.y) {
+                    grabber.claw.setPosition(Math.max(grabber.claw.getPosition()-.01, 0));
                 }
-
-
+                if (gamepad1.a) {
+                    grabber.wrist.setPosition(Math.min(grabber.wrist.getPosition()+.01, 1));
+                }
+                if (gamepad1.b) {
+                    grabber.wrist.setPosition(Math.max(grabber.wrist.getPosition()-.01, 0));
+                }
             }
         }
     }
