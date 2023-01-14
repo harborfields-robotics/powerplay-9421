@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.transition.Slide;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -7,6 +9,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.CV.BarcodeUtil;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.util.Util;
 // import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 
@@ -23,6 +26,9 @@ public class Hardware {
 
 
     private Telemetry telemetry;
+
+    public static final double elbow_min = 0.40;
+    public static final double elbow_max = 1.00;
 
     public Hardware(HardwareMap ahwMap, Telemetry telemetry) {
         hwMap = ahwMap;
@@ -51,7 +57,7 @@ public class Hardware {
     //Inits hardware for opmode
     public void init() throws InterruptedException {
 
-        int slides_reset_position = 1200;
+        int slides_reset_position = 1000;
 
         grabber.closeClaw();
         grabber.rightGrabberFace();
@@ -60,8 +66,7 @@ public class Hardware {
         slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         slides.setPower(.2);
         Thread.sleep(1500);
-        elbow1.setPosition(SlidesTarget.FRONT_GROUND.elbow_position);
-        elbow2.setPosition(SlidesTarget.FRONT_GROUND.elbow_position);
+        elbowMove(SlidesTarget.FRONT_GROUND.elbow_position);
         Thread.sleep(700);
         slides.setTargetPosition(0);
         slides.setPower(.2);
@@ -86,10 +91,25 @@ public class Hardware {
 
     }
 
+    public void elbowMove(double position)
+    {
+        position = Util.clamp(position, elbow_min, elbow_max);
+        elbow1.setPosition(position);
+        elbow2.setPosition(position);
+    }
+
+    public void flipElbowAndWrist(boolean raiseClaw) {
+        if (raiseClaw) {
+            this.elbowMove(Hardware.elbow_min);
+            this.grabber.flipGrabberFace();
+        } else {
+            this.elbowMove(Hardware.elbow_max);
+            this.grabber.rightGrabberFace();
+        }
+
+    }
+
     public Drivetrain getDrivetrain() {
         return dt;
     }
-
-	// TODO: this class was empty and causing issues with compilation
-    public class DriveThread extends Thread {}
 }

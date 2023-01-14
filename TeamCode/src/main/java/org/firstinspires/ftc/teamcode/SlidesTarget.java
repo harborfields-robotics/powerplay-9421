@@ -1,4 +1,5 @@
 package org.firstinspires.ftc.teamcode;
+import org.firstinspires.ftc.teamcode.util.Util;
 
 /*
  * PROBLEM:  elbow currently rotates upwards over the top of the robot instead of underneath the pivot point
@@ -11,23 +12,25 @@ package org.firstinspires.ftc.teamcode;
  */
 
 public enum SlidesTarget {
-    //BACK_GROUND(0, 0.0, false, "back ground"),
-    //BACK_LOW(0, 0.0, false, "back low"),
-    BACK_MIDDLE(0, 0, false, "back middle"),
-    BACK_HIGH(600, 0.15, false, "back high"),
-    FRONT_GROUND(0, 1.0, true, "front ground"),
-    FRONT_LOW(0, 0.65, true, "front low"),
-    FRONT_MIDDLE(300, 0.5, true, "front middle"),
-    FRONT_HIGH(600, 0.4, true, "front high");
+
+    BACK_GROUND(0, Hardware.elbow_min, false, "back ground"),
+    BACK_LOW(0, Hardware.elbow_min, false, "back low"),
+    BACK_MIDDLE(0, Hardware.elbow_min, false, "back middle"),
+    BACK_HIGH(1600, Hardware.elbow_min, false, "back high"),
+    FRONT_GROUND(0, Hardware.elbow_max, true, "front ground"), // 1.0
+    FRONT_LOW(500, Hardware.elbow_max, true, "front low"), // 0.65
+    FRONT_MIDDLE(1000, Hardware.elbow_max, true, "front middle"), // 0.5
+    FRONT_HIGH(1600, Hardware.elbow_max, true, "front high"); // 0.4
 
     public final int slides_position;
     public final double elbow_position;
+
     public final boolean front;
     public final String name;
 
     SlidesTarget(int s, double e, boolean f, String n) {
-        slides_position = s*4; // x4 for gear ratio
-        elbow_position  = e;
+        slides_position = s; // x4 for gear ratio
+        elbow_position  = Util.clamp(e, Hardware.elbow_min, Hardware.elbow_max);
         front = f;
         name = n;
     }

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.CV;
 
+import android.preference.SwitchPreference;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -22,10 +24,11 @@ public class BarcodePositionDetector extends OpenCvPipeline {
         LEFT,
         MIDDLE,
         RIGHT,
-        NOT_FOUND
+        NOT_FOUND,
+        NOT_READ
     }
 
-    private BarcodePosition barcodePosition;
+    private BarcodePosition barcodePosition = BarcodePosition.NOT_READ;
 
 	/*
     static final Rect LEFT_ROI = new Rect(
@@ -50,13 +53,27 @@ public class BarcodePositionDetector extends OpenCvPipeline {
         telemetry = t;
     }
 
+    public boolean isBlack(Mat frame)
+    {
+        double threshold = 0.05;
+        threshold *= threshold;
+        double norm = 0;
+        Scalar mean = Core.mean(frame);
+        for (double d : mean.val)
+            norm += d * d;
+        return norm < threshold;
+    }
     //public Mat processFrame( Mat input, String type ) {
 	public Mat processFrame(Mat input)
 	{
-		String time = "" + System.nanoTime();
-		String dir = "/sdcard/FIRST";
-		saveMat(input, dir + time + ".png");
-		//Mat mat = new Mat();
+		//String time = "" + System.nanoTime();
+		//String dir = "/sdcard/FIRST/";
+		//saveMat(input, dir + time + ".png");
+        if (isBlack(input)) {
+            barcodePosition = BarcodePosition.NOT_READ;
+            return input;
+        }
+
 		ArrayList<Mat> channels = new ArrayList<Mat>();
         //chNgwe
 //      Imgproc.cvtColor( input, mat,  Imgproc.COLOR_RGB2HSV_FULL);
@@ -72,9 +89,8 @@ public class BarcodePositionDetector extends OpenCvPipeline {
 		*/
 
         Core.split(input, channels);
-		for (int i = 0; i < channels.size(); ++i)
-			saveMat(channels.get(i), dir + time + "-" + i + ".png");
-
+		//for (int i = 0; i < channels.size(); ++i)
+			//saveMat(channels.get(i), dir + time + "-" + i + ".png");
 
        /* if( type.equalsIgnoreCase( "duck" ) ) {
             lowHSV = new Scalar(20, 100, 100);//25, 25, 35
@@ -105,11 +121,12 @@ public class BarcodePositionDetector extends OpenCvPipeline {
 		// red = 3 dots = right, green = 2 dots = middle, blue = 1 dot = left
 		// FIXME: temporarily scrambled colors -> dots for testing
         boolean leftBool = bAvg.val[0] > gAvg.val[0] && bAvg.val[0] > rAvg.val[0];
-        boolean rightBool = gAvg.val[0] > bAvg.val[0] && gAvg.val[0] > rAvg.val[0];
-        boolean middleBool = rAvg.val[0] > bAvg.val[0] && rAvg.val[0] > gAvg.val[0];
+        boolean middleBool = gAvg.val[0] > bAvg.val[0] && gAvg.val[0] > rAvg.val[0];
+        boolean rightBool = rAvg.val[0] > bAvg.val[0] && rAvg.val[0] > gAvg.val[0];
 
+        /*
 		try {
-			FileWriter r = new FileWriter(new File("/sdcard/FIRST/emergency.log"));
+			FileWriter r = new FileWriter(new File("/sdcard/FIRST/emergency.log\n"));
 			r.write(String.format(
 						"r=%s, g=%s, b=%s, left=%s, mid=%s, right=%s, len=%s, len[0]=%s",
 						rAvg, gAvg, bAvg,
@@ -117,6 +134,7 @@ public class BarcodePositionDetector extends OpenCvPipeline {
 						channels.size(), channels.get(0).total()));
 			r.close();
 		} catch (Exception e) {}
+		*/
 
         if( rightBool ) {
             barcodePosition = BarcodePosition.RIGHT;

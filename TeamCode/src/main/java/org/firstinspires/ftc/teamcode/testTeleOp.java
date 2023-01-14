@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.Hardware.elbow_min;
 import static org.firstinspires.ftc.teamcode.Hardware.slidesPosition;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -70,23 +71,6 @@ public class testTeleOp extends LinearOpMode {
         }
     }
 
-    /*
-     * TO-DO: make independent thread to operate claw, or otherwise make it work
-    public class ClawOperatorThread extends Thread {
-
-        Hardware BigBird;
-        public ClawOperatorThread(Hardware BigBird) {
-
-        }
-
-        @Override
-        public void run() {
-            if (BigBird.grabber.claw.getPosition() == )
-        }
-    }
-
-     */
-
     public class DrivetrainSpeedUpdateThread extends Thread {
 
         Hardware BigBird;
@@ -146,20 +130,35 @@ public class testTeleOp extends LinearOpMode {
                     adjustMotorPower(BL, BLTargetSpeed, speedIncrement);
                     adjustMotorPower(FR, FRTargetSpeed, speedIncrement);
                     adjustMotorPower(BR, BRTargetSpeed, speedIncrement);
-                    try {Thread.sleep(5);} catch (InterruptedException e) {e.printStackTrace();}
+                    try {
+                        Thread.sleep(5);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
                 else if (constant_controls) { // Move one tile in a cardinal direction
                     if (gamepad1.dpad_up) {
-                        try {BigBird.dt.driveForward(1, .8);} catch (InterruptedException e) {}
+                        try {
+                            BigBird.dt.driveForward(1, .8);
+                        } catch (InterruptedException e) {
+                        }
                     }
                     else if (gamepad1.dpad_down) {
-                        try {BigBird.dt.driveBackward(1, .8);} catch (InterruptedException e) {}
+                        try {
+                            BigBird.dt.driveBackward(1, .8);
+                        } catch (InterruptedException e) {
+                        }
                     }
                     else if (gamepad1.dpad_left) {
-                        try {BigBird.dt.strafeLeft(1, .8);} catch (InterruptedException e) {}
-                    }
-                    else if (gamepad1.dpad_right) {
-                        try {BigBird.dt.strafeRight(1, .8);} catch (InterruptedException e) {}
+                        try {
+                            BigBird.dt.strafeLeft(1, .8);
+                        } catch (InterruptedException e) {
+                        }
+                    } else if (gamepad1.dpad_right) {
+                        try {
+                            BigBird.dt.strafeRight(1, .8);
+                        } catch (InterruptedException e) {
+                        }
                     }
                 }
                 else { // Normal controls
@@ -181,16 +180,49 @@ public class testTeleOp extends LinearOpMode {
         }
 
         public void run() {
+            boolean front = true;
+            boolean elbow_changed = false;
             while (opModeIsActive()) {
-                if (gamepad1.dpad_up) {
-                    slidesPosition = SlidesTarget.FRONT_HIGH;
+                if (gamepad2.a && !elbow_changed) {
+                    if (front) {
+                        BigBird.flipElbowAndWrist(true);
+                        front = false;
+                    }
+                    else {
+                        BigBird.flipElbowAndWrist(false);
+                        front = true;
+                    }
+                    elbow_changed = true;
                 }
-                else if (gamepad1.dpad_left || gamepad1.dpad_right) {
-                    slidesPosition = SlidesTarget.FRONT_MIDDLE;
+                else if (!gamepad2.a) {
+                    elbow_changed = false;
                 }
-                else if (gamepad1.dpad_down) {
-                    slidesPosition = (slidesPosition == SlidesTarget.FRONT_LOW) ? SlidesTarget.FRONT_GROUND : SlidesTarget.FRONT_LOW;
+                if (front) {
+                    if (gamepad2.dpad_up) {
+                        slidesPosition = SlidesTarget.FRONT_HIGH;
+                    }
+                    else if (gamepad2.dpad_left) {
+                        slidesPosition = SlidesTarget.FRONT_MIDDLE;
+                    }
+                    else if (gamepad2.dpad_right) {
+                        slidesPosition = SlidesTarget.FRONT_LOW;
+                    }
+                    else if (gamepad2.dpad_down) {
+                        slidesPosition = SlidesTarget.FRONT_GROUND;
+                    }
                 }
+                else {
+                    if (gamepad2.dpad_up) {
+                        slidesPosition = SlidesTarget.BACK_HIGH;
+                    } else if (gamepad2.dpad_left) {
+                        slidesPosition = SlidesTarget.BACK_MIDDLE;
+                    } else if (gamepad2.dpad_right) {
+                        slidesPosition = SlidesTarget.BACK_LOW;
+                    } else if (gamepad2.dpad_down) {
+                        slidesPosition = SlidesTarget.BACK_GROUND;
+                    }
+                }
+
                 if (BigBird.slides.getCurrentPosition() > slidesPosition.slides_position) {
                     BigBird.slides.setPower(.8);
                 }
@@ -200,12 +232,12 @@ public class testTeleOp extends LinearOpMode {
                 else if (BigBird.slides.getCurrentPosition() == slidesPosition.slides_position) {
                     BigBird.slides.setPower(0);
                 }
-                BigBird.slides.setTargetPosition(slidesPosition.slides_position);
-                BigBird.elbow1.setPosition(slidesPosition.elbow_position);
-                BigBird.elbow2.setPosition(slidesPosition.elbow_position);
-            }
-        }
 
+                BigBird.slides.setTargetPosition(slidesPosition.slides_position);
+                // BigBird.elbowMove(slidesPosition.elbow_position);
+            }
+
+        }
     }
 
     public class GrabberThread extends Thread {
@@ -223,28 +255,26 @@ public class testTeleOp extends LinearOpMode {
             while (opModeIsActive()) {
 
                 // Toggle x button to open/close claw
-                if (gamepad1.x && !claw_changed) {
-                    if(grabber.isClosed) {
+                if (gamepad2.x && !claw_changed) {
+                    if (grabber.isClosed) {
                         grabber.openClaw();
-                    }
-                    else {
+                    } else {
                         grabber.closeClaw();
                     }
                     claw_changed = true;
-                } else if (!gamepad1.x) {
+                } else if (!gamepad2.x) {
                     claw_changed = false;
                 }
 
                 // Toggle y button to flip grabber
-                if (gamepad1.y && !wrist_changed) {
+                if (gamepad2.y && !wrist_changed) {
                     if (grabber.isFlipped) {
                         grabber.rightGrabberFace();
-                    }
-                    else {
+                    } else {
                         grabber.flipGrabberFace();
                     }
                     wrist_changed = true;
-                } else if (!gamepad1.y) {
+                } else if (!gamepad2.y) {
                     wrist_changed = false;
                 }
 
@@ -254,7 +284,7 @@ public class testTeleOp extends LinearOpMode {
     }
 
 
-    public static void adjustMotorPower(DcMotor motor, double targetSpeed, double speedIncrement) {
+    public void adjustMotorPower(DcMotor motor, double targetSpeed, double speedIncrement) {
         double speed = motor.getPower();
         if (speed > targetSpeed) {
             motor.setPower((speed > targetSpeed + speedIncrement) ? speed - speedIncrement : targetSpeed);
@@ -263,16 +293,18 @@ public class testTeleOp extends LinearOpMode {
         }
     }
 
-    public static void setMotorPowers(Hardware BigBird, double FLspeed, double BLspeed, double FRspeed, double BRspeed) {
+    public void setMotorPowers(Hardware BigBird, double FLspeed, double BLspeed, double FRspeed, double BRspeed) {
         BigBird.dt.FL.setPower(FLspeed);
         BigBird.dt.FR.setPower(FRspeed);
         BigBird.dt.BL.setPower(BLspeed);
         BigBird.dt.BR.setPower(BRspeed);
     }
 
-    public static void resetSlides(Hardware BigBird) {
+    public void resetSlides(Hardware BigBird) {
         BigBird.slides.setTargetPosition(SlidesTarget.FRONT_GROUND.slides_position);
         BigBird.elbow1.setPosition(SlidesTarget.FRONT_GROUND.elbow_position);
         BigBird.elbow2.setPosition(SlidesTarget.FRONT_GROUND.elbow_position);
     }
+
+
 }

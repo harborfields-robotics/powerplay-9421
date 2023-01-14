@@ -56,7 +56,14 @@ public class BarcodeUtil {
     }
 
     public BarcodePositionDetector.BarcodePosition getBarcodePosition( ) {
-        return pipeline.getBarcodePosition( );
+        BarcodePositionDetector.BarcodePosition ret;
+        int iter = 0;
+        do {
+            ret = pipeline.getBarcodePosition();
+            try {
+                Thread.sleep(10);
+            } catch (Exception e) {}
+        } while (ret == BarcodePositionDetector.BarcodePosition.NOT_READ && iter++ < 10);
+        return ret;
     }
-
 }
