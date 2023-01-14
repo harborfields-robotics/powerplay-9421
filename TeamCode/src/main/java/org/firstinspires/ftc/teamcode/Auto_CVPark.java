@@ -33,8 +33,9 @@ public class Auto_CVPark extends LinearOpMode {
 
         // TO ADD: use CV to detect which zone to park in
 
+		// return early so that it doesn't move
         double power = .4;
-        BigBird.dt.driveForward(1.15,power); // Drive forward 1.125 tiles since all parking zones are 1 tile forwards
+        BigBird.dt.driveForward(1.15, power); // Drive forward 1.125 tiles since all parking zones are 1 tile forwards
         BigBird.dt.setMotorPower(0,0,0,0);
 
         if (one_dot) {
@@ -53,6 +54,5 @@ public class Auto_CVPark extends LinearOpMode {
         BigBird.dt.setMotorPower(0,0,0,0);
 
         Thread.sleep(2000);
-
     }
 }
