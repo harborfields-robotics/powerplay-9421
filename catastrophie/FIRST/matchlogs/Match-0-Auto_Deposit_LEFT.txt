@@ -1,0 +1,29 @@
+--------- beginning of main
+01-14 14:49:35.040  2585  2656 V Robocol : received command: CMD_SET_MATCH_NUMBER(10613) 0
+01-14 14:49:35.043  2585  2656 V Robocol : received command: CMD_INIT_OP_MODE(10614) Auto_Deposit_LEFT
+01-14 14:49:35.061  2585  2657 I RobotCore: ******************** START - OPMODE Auto_Deposit_LEFT ********************
+01-14 14:49:35.064  2585  2680 I RobotCore: Attempting to switch to op mode Auto_Deposit_LEFT
+01-14 14:49:35.258  2585  2698 V RobotCore: thread: 'LinearOpMode main' starting...
+01-14 14:49:35.273  2585  2665 V Robocol : sending CMD_NOTIFY_INIT_OP_MODE(664), attempt: 0
+01-14 14:49:35.368  2585  2698 I System.out: OpenCvCameraBase ctor: EasyOpenCV version 1.5.3
+01-14 14:49:35.393  2585  2665 V Robocol : sending CMD_STREAM_CHANGE(671), attempt: 0
+01-14 14:49:35.396  2585  2585 D OpenCvViewport: surfaceCreated()
+01-14 14:49:35.396  2585  2585 D OpenCvViewport: ...surfaceCreated()
+01-14 14:49:35.396  2585  2585 D OpenCvViewport: surfaceChanged()
+01-14 14:49:35.397  2585  2585 D OpenCvViewport: CheckState(): user requested that we deactivate
+01-14 14:49:35.397  2585  2585 D OpenCvViewport: CheckState(): already deactivated
+01-14 14:49:35.397  2585  2585 D OpenCvViewport: ...surfaceChanged()
+01-14 14:49:35.801  2585  2656 V Robocol : received command: CMD_RUN_OP_MODE(10651) Auto_Deposit_LEFT
+01-14 14:49:35.834  2585  2665 V Robocol : sending CMD_NOTIFY_RUN_OP_MODE(691), attempt: 0
+01-14 14:49:47.485  2585  2656 V Robocol : received command: CMD_INIT_OP_MODE(11095) $Stop$Robot$
+01-14 14:49:47.496  2585  2657 I RobotCore: ******************** STOP - OPMODE /storage/emulated/0/FIRST/matchlogs/Match-0-Auto_Deposit_LEFT.txt ********************
+01-14 14:49:47.510  2585  2703 I RobotCore: saving match logcat to /storage/emulated/0/FIRST/matchlogs/Match-0-Auto_Deposit_LEFT.txt
+01-14 14:49:47.510  2585  2703 I RobotCore: logging command line: exec logcat -d -T '1-14 14:49:35.000' -f '/storage/emulated/0/FIRST/matchlogs/Match-0-Auto_Deposit_LEFT.txt' -n4 -v threadtime UsbRequestJNI:S UsbRequest:S art:W ThreadPool:W System:W ExtendedExtractor:W OMXClient:W MediaPlayer:W dalvikvm:W  *:V
+01-14 14:49:47.511  2585  2698 D RobotCore: LinearOpMode received an InterruptedException; shutting down this linear op mode
+01-14 14:49:47.511  2585  2698 V RobotCore: thread: ...terminating 'LinearOpMode main'
+01-14 14:49:47.516  2585  2680 I RobotCore: Attempting to switch to op mode $Stop$Robot$
+01-14 14:49:47.523  2585  2585 D OpenCvViewport: surfaceDestroyed()
+01-14 14:49:47.523  2585  2585 D OpenCvViewport: CheckState(): lifecycle mandates deactivation regardless of user
+01-14 14:49:47.523  2585  2585 D OpenCvViewport: CheckState(): already deactivated
+01-14 14:49:47.523  2585  2585 D OpenCvViewport: ...surfaceDestroyed()
+01-14 14:49:47.553  2585  2665 V Robocol : sending CMD_STREAM_CHANGE(1138), attempt: 0
