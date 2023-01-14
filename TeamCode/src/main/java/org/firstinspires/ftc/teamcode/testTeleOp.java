@@ -39,6 +39,7 @@ public class testTeleOp extends LinearOpMode {
     }
 
     static boolean smooth_controls = true;
+    static boolean constant_controls = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -59,13 +60,6 @@ public class testTeleOp extends LinearOpMode {
         grabberThread.start();
 
         while (opModeIsActive()) {
-
-            if (gamepad1.left_bumper) {
-                smooth_controls = true;
-            }
-            else if (gamepad1.right_bumper) {
-                smooth_controls = false;
-            }
 
             telemetry.addData("claw position: ", BigBird.grabber.claw.getPosition());
             telemetry.addData("wrist position: ", BigBird.grabber.wrist.getPosition());
@@ -114,6 +108,23 @@ public class testTeleOp extends LinearOpMode {
             double speedIncrement = .05;
 
             while (opModeIsActive()) {
+
+                // smooth controls
+                if (gamepad1.left_bumper) {
+                    smooth_controls = true;
+                    constant_controls = false;
+                }
+                // default control mode
+                else if (gamepad1.right_bumper) {
+                    smooth_controls = false;
+                    constant_controls = false;
+                }
+                // "block" controls
+                else if (gamepad1.start) {
+                    smooth_controls = false;
+                    constant_controls = true;
+                }
+
                 double y = -gamepad1.left_stick_y; // Remember, this is reversed!
                 double x = gamepad1.left_stick_x;
                 double rx = gamepad1.right_stick_x;
@@ -130,17 +141,30 @@ public class testTeleOp extends LinearOpMode {
                 double FRTargetSpeed = clamp(y - x - rx, -1, 1);
                 double BRTargetSpeed = clamp(y + x - rx, -1, 1);
 
-                if (smooth_controls) {
+                if (smooth_controls) { // Smooth acceleration & deceleration
                     adjustMotorPower(FL, FLTargetSpeed, speedIncrement);
                     adjustMotorPower(BL, BLTargetSpeed, speedIncrement);
                     adjustMotorPower(FR, FRTargetSpeed, speedIncrement);
                     adjustMotorPower(BR, BRTargetSpeed, speedIncrement);
+                    try {Thread.sleep(5);} catch (InterruptedException e) {e.printStackTrace();}
                 }
-                else {
+                else if (constant_controls) { // Move one tile in a cardinal direction
+                    if (gamepad1.dpad_up) {
+                        try {BigBird.dt.driveForward(1, .8);} catch (InterruptedException e) {}
+                    }
+                    else if (gamepad1.dpad_down) {
+                        try {BigBird.dt.driveBackward(1, .8);} catch (InterruptedException e) {}
+                    }
+                    else if (gamepad1.dpad_left) {
+                        try {BigBird.dt.strafeLeft(1, .8);} catch (InterruptedException e) {}
+                    }
+                    else if (gamepad1.dpad_right) {
+                        try {BigBird.dt.strafeRight(1, .8);} catch (InterruptedException e) {}
+                    }
+                }
+                else { // Normal controls
                     setMotorPowers(BigBird, FLTargetSpeed, BLTargetSpeed, FRTargetSpeed, BRTargetSpeed);
                 }
-
-                try {Thread.sleep(5);} catch (InterruptedException e) {e.printStackTrace();}
             }
         }
     }
@@ -244,5 +268,11 @@ public class testTeleOp extends LinearOpMode {
         BigBird.dt.FR.setPower(FRspeed);
         BigBird.dt.BL.setPower(BLspeed);
         BigBird.dt.BR.setPower(BRspeed);
+    }
+
+    public static void resetSlides(Hardware BigBird) {
+        BigBird.slides.setTargetPosition(SlidesTarget.FRONT_GROUND.slides_position);
+        BigBird.elbow1.setPosition(SlidesTarget.FRONT_GROUND.elbow_position);
+        BigBird.elbow2.setPosition(SlidesTarget.FRONT_GROUND.elbow_position);
     }
 }

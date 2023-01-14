@@ -51,19 +51,20 @@ public class Hardware {
     //Inits hardware for opmode
     public void init() throws InterruptedException {
 
-        int slides_reset_position = 1000;
+        int slides_reset_position = 1200;
 
         grabber.closeClaw();
+        grabber.rightGrabberFace();
         Thread.sleep(250);
         slides.setTargetPosition(slides_reset_position);
         slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        slides.setPower(.4);
-        Thread.sleep(500);
+        slides.setPower(.2);
+        Thread.sleep(1500);
         elbow1.setPosition(SlidesTarget.FRONT_GROUND.elbow_position);
         elbow2.setPosition(SlidesTarget.FRONT_GROUND.elbow_position);
-        Thread.sleep(500);
+        Thread.sleep(1500);
         slides.setTargetPosition(0);
-        slides.setPower(.4);
+        slides.setPower(.2);
         telemetry.addData("claw: ", grabber.claw.getPosition());
         telemetry.addData("wrist: ", grabber.wrist.getPosition());
         telemetry.addData("slides: ", slides.getCurrentPosition());
