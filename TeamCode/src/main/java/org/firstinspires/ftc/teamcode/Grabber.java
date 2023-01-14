@@ -18,7 +18,7 @@ public class Grabber {
     // initializes motors & servos
     public Grabber(HardwareMap ahwMap) {
         claw = ahwMap.get(Servo.class, "claw"); // control hub port ?
-        wrist = ahwMap.get(Servo.class, "claw face"); // control hub port ?
+        wrist = ahwMap.get(Servo.class, "wrist"); // control hub port ?
         claw.setDirection(Servo.Direction.REVERSE);
         wrist.setDirection(Servo.Direction.REVERSE);
         isClosed = false;

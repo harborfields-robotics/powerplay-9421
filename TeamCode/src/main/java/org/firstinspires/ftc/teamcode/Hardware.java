@@ -55,14 +55,14 @@ public class Hardware {
 
         grabber.closeClaw();
         grabber.rightGrabberFace();
-        Thread.sleep(250);
+        Thread.sleep(500);
         slides.setTargetPosition(slides_reset_position);
         slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         slides.setPower(.2);
         Thread.sleep(1500);
         elbow1.setPosition(SlidesTarget.FRONT_GROUND.elbow_position);
         elbow2.setPosition(SlidesTarget.FRONT_GROUND.elbow_position);
-        Thread.sleep(1500);
+        Thread.sleep(700);
         slides.setTargetPosition(0);
         slides.setPower(.2);
         telemetry.addData("claw: ", grabber.claw.getPosition());
