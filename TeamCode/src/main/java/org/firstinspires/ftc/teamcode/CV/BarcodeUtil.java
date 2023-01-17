@@ -16,6 +16,7 @@ public class BarcodeUtil {
 
     private OpenCvWebcam webcam;
     private BarcodePositionDetector pipeline;
+	static final int WAIT_LIMIT = 50;
 
     public BarcodeUtil(HardwareMap hardwareMap, String webcamName, Telemetry telemetry) {
         //telemetry.setAutoClear(false);
@@ -55,15 +56,14 @@ public class BarcodeUtil {
         } );
     }
 
-    public BarcodePositionDetector.BarcodePosition getBarcodePosition( ) {
-        BarcodePositionDetector.BarcodePosition ret;
-        int iter = 0;
-        do {
-            ret = pipeline.getBarcodePosition();
-            try {
-                Thread.sleep(10);
-            } catch (Exception e) {}
-        } while (ret == BarcodePositionDetector.BarcodePosition.NOT_READ && iter++ < 10);
-        return ret;
+    public BarcodePositionDetector.BarcodePosition getBarcodePosition() {
+		int tries = 0;
+		BarcodePositionDetector.BarcodePosition ret;
+		do {
+			Thread.sleep(10);
+			ret = pipeline.getBarcodePostiion();
+		} while (ret == BarcodePositionDetector.BarcodePosition.NOT_READ && i++ < WAIT_LIMIT);
+		webcam.stopStreaming();
+		return ret;
     }
 }
