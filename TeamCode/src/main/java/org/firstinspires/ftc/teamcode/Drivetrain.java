@@ -80,7 +80,7 @@ public class Drivetrain {
 
     public void strafeLeft(double num_tiles, double power) throws InterruptedException {
         setMotorModes(STOP_AND_RESET_ENCODER);
-        setMotorTargets((int) (-num_tiles * (ticks_per_tile + 20 * strafe_constant), // FL
+        setMotorTargets((int) (-num_tiles * (ticks_per_tile + 20 * strafe_constant)), // FL
                         (int) (num_tiles  * ticks_per_tile  * strafe_constant), // FR
                         (int) (num_tiles  * ticks_per_tile * strafe_constant), // BL
                         (int) (-num_tiles * (ticks_per_tile - 20) * strafe_constant)); // BR
