@@ -16,7 +16,10 @@ import org.firstinspires.ftc.teamcode.EmergencyLogger;
 import java.util.ArrayList;
 import java.io.*;
 
+// copied archived class from Freight Frenzy
 public class BarcodePositionDetector extends OpenCvPipeline {
+
+
 
     Telemetry telemetry;
 
@@ -65,6 +68,8 @@ public class BarcodePositionDetector extends OpenCvPipeline {
         return norm < threshold;
     }
     //public Mat processFrame( Mat input, String type ) {
+
+    /* Duplicate method
 	public boolean isBlack(Mat frame)
 	{
 		Scalar avg = Core.mean(frame);
@@ -74,6 +79,8 @@ public class BarcodePositionDetector extends OpenCvPipeline {
 		return norm < BLACK_THRESHOLD * BLACK_THRESHOLD;
 	}
 
+     */
+
 	public Mat processFrame(Mat input)
 	{
 		//String time = "" + System.nanoTime();
@@ -81,7 +88,7 @@ public class BarcodePositionDetector extends OpenCvPipeline {
 		//saveMat(input, dir + time + ".png");
 
 		if (isBlack(input)) {
-			barcodePosition = barcodePosition.NOT_READ;
+			barcodePosition = BarcodePosition.NOT_READ;
 			telemetry.addData("Location", "too dark");
 			return input;
 		}
@@ -115,8 +122,12 @@ public class BarcodePositionDetector extends OpenCvPipeline {
         middle.release( );
         right.release( );
 */
-		for (int i = 0; i < channels.size(); ++i)
-			saveMat(channels.get(i), dir + time + "-" + i + ".png");
+        /*  1/18/2023 dir and time not declared/initialized --> commented out to make code build
+		for (int i = 0; i < channels.size(); ++i) {
+            saveMat(channels.get(i), dir + time + "-" + i + ".png");
+        }
+
+         */
 
         Scalar rAvg = Core.mean(channels.get(0));
         Scalar gAvg = Core.mean(channels.get(1));
@@ -140,8 +151,6 @@ public class BarcodePositionDetector extends OpenCvPipeline {
 			r.close();
 		} catch (Exception e) {}
 		*/
-
-        if( rightBool ) {
         if (rightBool) {
             barcodePosition = BarcodePosition.RIGHT;
             telemetry.addData( "Location", "right" );
@@ -157,6 +166,7 @@ public class BarcodePositionDetector extends OpenCvPipeline {
         }
 		return input;
     }
+
 
     public BarcodePosition getBarcodePosition() {
         return barcodePosition;

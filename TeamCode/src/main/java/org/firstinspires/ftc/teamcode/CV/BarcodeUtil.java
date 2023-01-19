@@ -45,7 +45,7 @@ public class BarcodeUtil {
         webcam.openCameraDeviceAsync( new OpenCvCamera.AsyncCameraOpenListener( ) {
             @Override
             public void onOpened( ) {
-                webcam.startStreaming( 320, 240, OpenCvCameraRotation.UPRIGHT );
+                webcam.startStreaming( 320, 240, OpenCvCameraRotation.UPRIGHT ); // Camera dimensions are set here
             }
 
             @Override
@@ -56,7 +56,8 @@ public class BarcodeUtil {
         } );
     }
 
-    public BarcodePositionDetector.BarcodePosition getBarcodePosition() {
+    /* 1/18/2023 - commented out because it was causing code to not build
+    public BarcodePositionDetector.BarcodePosition getBarcodePosition() throws InterruptedException {
 		int tries = 0;
 		BarcodePositionDetector.BarcodePosition ret;
 		do {
@@ -66,4 +67,6 @@ public class BarcodeUtil {
 		webcam.stopStreaming();
 		return ret;
     }
+
+     */
 }

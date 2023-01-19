@@ -24,19 +24,22 @@ public class Auto_CVPark extends LinearOpMode {
         BigBird.cvUtil.init();
 
         BarcodePositionDetector.BarcodePosition barcodePosition;
-        barcodePosition = BigBird.cvUtil.getBarcodePosition();
-        telemetry.addData("Barcode position", barcodePosition);
+        // barcodePosition = BigBird.cvUtil.getBarcodePosition();  Commented because code wouldn't build
+        // telemetry.addData("Barcode position", barcodePosition);
 
-        boolean one_dot = barcodePosition == BarcodePositionDetector.BarcodePosition.LEFT; // blue
-        boolean two_dot = barcodePosition == BarcodePositionDetector.BarcodePosition.MIDDLE; // green
-        boolean three_dot = barcodePosition == BarcodePositionDetector.BarcodePosition.RIGHT; // red
+        // one_dot = barcodePosition == BarcodePositionDetector.BarcodePosition.LEFT; // blue
+        // boolean two_dot = barcodePosition == BarcodePositionDetector.BarcodePosition.MIDDLE; // green
+        // boolean three_dot = barcodePosition == BarcodePositionDetector.BarcodePosition.RIGHT; // red
+
+        boolean one_dot = true;
+        boolean two_dot = false;
+        boolean three_dot = false;
 
         // start of program running
 
         // TO ADD: use CV to detect which zone to park in
 
 		// return early so that it doesn't move
-        double power = 0.4;
         BigBird.dt.driveForward(1.15, power); // Drive forward 1.125 tiles since all parking zones are 1 tile forwards
         BigBird.dt.setMotorPower(0, 0, 0, 0);
 

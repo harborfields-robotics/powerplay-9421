@@ -15,11 +15,11 @@ import org.firstinspires.ftc.teamcode.util.Util;
 
 public class Hardware {
     HardwareMap hwMap = null;
-    Drivetrain dt = null;
+    public Drivetrain dt = null;
     DcMotor slides = null;
     Servo elbow1 = null;
     Servo elbow2 = null;
-    Grabber grabber = null;
+    public Grabber grabber = null;
     public static SlidesTarget slidesPosition = null;
     public SampleMecanumDrive drive;
     BarcodeUtil cvUtil;
@@ -62,20 +62,22 @@ public class Hardware {
         grabber.closeClaw();
         grabber.rightGrabberFace();
         Thread.sleep(500);
+        /*
         slides.setTargetPosition(slides_reset_position);
         slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         slides.setPower(.2);
         Thread.sleep(1500);
+         */
         elbowMove(SlidesTarget.FRONT_GROUND.elbow_position);
-        Thread.sleep(700);
         slides.setTargetPosition(0);
-        slides.setPower(.2);
+        slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        while (slides.getCurrentPosition() > 0) {
+            slides.setPower(.2);
+        }
         telemetry.addData("claw: ", grabber.claw.getPosition());
         telemetry.addData("wrist: ", grabber.wrist.getPosition());
         telemetry.addData("slides: ", slides.getCurrentPosition());
         telemetry.addData("elbow: ", elbow1.getPosition());
-
-
 
         //cvUtil = new BarcodeUtil(hwMap, "Webcam1", telemetry);
         //colorFront = hardwareMap.get(NormalizedColorSensor.class, "color_front");
