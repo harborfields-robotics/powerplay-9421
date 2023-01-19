@@ -34,6 +34,8 @@ import org.opencv.imgproc.Imgproc;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.apriltag.AprilTagDetectorJNI;
 import org.openftc.easyopencv.OpenCvPipeline;
+import org.opencv.core.Core;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -99,9 +101,19 @@ class AprilTagDetectionPipeline extends OpenCvPipeline
         }
     }
 
+    double imgMag(Mat img)
+    {
+        Scalar tmp = Core.mean(img);
+        double sum = 0;
+        for (double d : tmp.val)
+            sum += d * d;
+        return sum;
+    }
+
     @Override
     public Mat processFrame(Mat input)
     {
+        Log.d("april pipeline", "Received input: " + imgMag(input));
         // Convert to greyscale
         Imgproc.cvtColor(input, grey, Imgproc.COLOR_RGBA2GRAY);
 

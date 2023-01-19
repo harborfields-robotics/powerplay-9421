@@ -32,6 +32,7 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -68,21 +69,28 @@ public class AprilTagAutoExample extends LinearOpMode
     public void runOpMode() throws InterruptedException {
 
         // Standard initialization
-        Hardware BigBird = new Hardware(hardwareMap, telemetry);
-        BigBird.init();
-        telemetry.addData("init() complete", leftID);
+
+        // FIXME: initializing hardware breaks the init loop, CV
+        //Hardware BigBird = new Hardware(hardwareMap, telemetry);
+        //BigBird.init();
+        //telemetry.addData("init() complete", leftID);
+        Log.d("Auto", "Finished hardware init.");
         telemetry.update();
-        Thread.sleep(500);
+        //Thread.sleep(500);
+
 
         // CV junk starts here
         int cameraMonitorViewId = hardwareMap.appContext
                 .getResources()
                 .getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        Log.d("Auto", "Got MonitorViewId: " + cameraMonitorViewId);
         camera = OpenCvCameraFactory
                 .getInstance()
                 .createWebcam(hardwareMap.get(WebcamName.class, "Webcam1"), cameraMonitorViewId);
+        Log.d("Auto", "Instantiated camera factory");
         telemetry.addLine("Got pipeline");
         aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
+        Log.d("Auto", "Instantiated pipeline");
 
         camera.setPipeline(aprilTagDetectionPipeline);
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
@@ -91,12 +99,13 @@ public class AprilTagAutoExample extends LinearOpMode
             public void onOpened()
             {
                 camera.startStreaming(320,240, OpenCvCameraRotation.UPRIGHT); // Set camera dimensions here
+                Log.d("Camera Open", "Opened Camera");
             }
 
             @Override
             public void onError(int errorCode)
             {
-
+                Log.e("Camera Open", "Failed to open camera: " + errorCode);
             }
         });
         telemetry.addData("camera initialization complete", troubleshooterID);
@@ -110,53 +119,40 @@ public class AprilTagAutoExample extends LinearOpMode
          */
         do {
             telemetry.addData("CV detection loop entered", troubleshooterID);
+            Log.d("Auto", "Entered CV detection loop");
             ArrayList<AprilTagDetection> currentDetections = aprilTagDetectionPipeline.getLatestDetections();
 
-            if(currentDetections.size() != 0)
-            {
+            if (currentDetections.size() != 0) {
                 boolean tagFound = false;
 
-                for(AprilTagDetection tag : currentDetections)
-                {
-                    if(tag.id == leftID || tag.id == middleID || tag.id == rightID)
-                    {
+                for (AprilTagDetection tag : currentDetections) {
+                    if (tag.id == leftID || tag.id == middleID || tag.id == rightID) {
                         tagOfInterest = tag;
                         tagFound = true;
                         break;
                     }
                 }
 
-                if(tagFound)
-                {
+                if (tagFound) {
                     telemetry.addLine("Tag of interest is in sight!\n\nLocation data:");
                     tagToTelemetry(tagOfInterest);
-                }
-                else
-                {
+                } else {
                     telemetry.addLine("Don't see tag of interest :(");
 
-                    if(tagOfInterest == null)
-                    {
+                    if (tagOfInterest == null) {
                         telemetry.addLine("(The tag has never been seen)");
-                    }
-                    else
-                    {
+                    } else {
                         telemetry.addLine("\nBut we HAVE seen the tag before; last seen at:");
                         tagToTelemetry(tagOfInterest);
                     }
                 }
 
-            }
-            else
-            {
+            } else {
                 telemetry.addLine("Don't see tag of interest :(");
 
-                if(tagOfInterest == null)
-                {
+                if (tagOfInterest == null) {
                     telemetry.addLine("(The tag has never been seen)");
-                }
-                else
-                {
+                } else {
                     telemetry.addLine("\nBut we HAVE seen the tag before; last seen at:");
                     tagToTelemetry(tagOfInterest);
                 }
@@ -165,7 +161,12 @@ public class AprilTagAutoExample extends LinearOpMode
 
             telemetry.update();
             sleep(20);
-        } while (!isStarted() && !isStopRequested());
+            if (isStarted() || isStopRequested()) {
+                Log.d("Auto Init", "Started or stop requested.");
+                break;
+            }
+        } while (true);
+        //} while (!isStarted() && !isStopRequested());
 
         /*
          * The START command just came in: now work off the latest snapshot acquired
@@ -175,7 +176,7 @@ public class AprilTagAutoExample extends LinearOpMode
         telemetry.addData("CV loop exited", 11115);
 
         /* Update the telemetry */
-        if(tagOfInterest != null) {
+        if (tagOfInterest != null) {
             telemetry.addLine("Tag snapshot:\n");
             tagToTelemetry(tagOfInterest);
             telemetry.update();
@@ -189,16 +190,16 @@ public class AprilTagAutoExample extends LinearOpMode
          * (CV junk ends here)
          */
 
-        BigBird.dt.driveForward(1.15, 0.2);
+        //BigBird.dt.driveForward(1.15, 0.2);
 
         if (tagOfInterest.id == leftID) {
-            BigBird.dt.strafeLeft(1, 0.2);
+            //BigBird.dt.strafeLeft(1, 0.2);
         }
         else if (tagOfInterest == null || tagOfInterest.id == middleID) {
             // go to middle zone
         }
         else if (tagOfInterest.id == rightID) {
-            BigBird.dt.strafeRight(1, 0.2);
+            //BigBird.dt.strafeRight(1, 0.2);
         }
     }
 
