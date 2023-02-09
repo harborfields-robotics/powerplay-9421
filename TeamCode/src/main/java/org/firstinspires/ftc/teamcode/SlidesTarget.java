@@ -13,14 +13,14 @@ import org.firstinspires.ftc.teamcode.util.Util;
 
 public enum SlidesTarget {
 
-    BACK_GROUND(0, Hardware.elbow_min, false, "back ground"),
-    BACK_LOW(0, Hardware.elbow_min, false, "back low"),
+    //BACK_GROUND(0, Hardware.elbow_min, false, "back ground"),
+    BACK_LOW(0, 0.25/*0.35*/, false, "back low"),
+    BACK_HIGH((int) (1800), Hardware.elbow_min, false, "back high"),
     BACK_MIDDLE(0, Hardware.elbow_min, false, "back middle"),
-    BACK_HIGH(1600, Hardware.elbow_min, false, "back high"),
-    FRONT_GROUND(0, Hardware.elbow_max, true, "front ground"), // 1.0
-    FRONT_LOW(500, Hardware.elbow_max, true, "front low"), // 0.65
-    FRONT_MIDDLE(1000, Hardware.elbow_max, true, "front middle"), // 0.5
-    FRONT_HIGH(1600, Hardware.elbow_max, true, "front high"); // 0.4
+    FRONT_GROUND(0, Hardware.elbow_max, true, "front ground"); // 1.0
+  //  FRONT_LOW(500, Hardware.elbow_max, true, "front low"), // 0.65
+    //FRONT_MIDDLE(1000, Hardware.elbow_max, true, "front middle"), // 0.5
+//    FRONT_HIGH(1600, Hardware.elbow_max, true, "front high"); // 0.4
 
     public final int slides_position;
     public final double elbow_position;

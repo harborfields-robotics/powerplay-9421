@@ -1,47 +1,28 @@
-/*
- * Copyright (c) 2021 OpenFTC Team
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+package org.firstinspires.ftc.teamcode;
 
-package org.firstinspires.ftc.teamcode.CV.AprilTags;
+import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.Hardware;
+import org.firstinspires.ftc.teamcode.CV.AprilTags.AprilTagDetectionPipeline;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvInternalCamera;
-import android.util.Log;
 
 import java.util.ArrayList;
 
 @Autonomous
-public class AprilTagAutoExample extends LinearOpMode
-{
-    static double turnPower = 0.25;
-    static double drivePower = 0.3;
-    static double strafePower = 0.4;
+public class Auto_DepositHighAndPark extends LinearOpMode {
+
+    static int postDepositWaitTime = 1000; // time between dropping cone and moving robot again (milliseconds)
+    static double turnPower = 0.5;
+    static double drivePower = 0.4;
+    static double strafePower = 0.45;
+
     static int troubleshooterID = 11115;
     OpenCvCamera camera;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
@@ -69,6 +50,16 @@ public class AprilTagAutoExample extends LinearOpMode
 
     @Override
     public void runOpMode() throws InterruptedException {
+
+        telemetry.addData("BigBird is about to initialize", troubleshooterID);
+        telemetry.update();
+        Hardware BigBird = new Hardware(hardwareMap, telemetry);
+        telemetry.addData("BigBird is initialized", troubleshooterID);
+        telemetry.update();
+
+        CycleConeThread cct = new CycleConeThread(BigBird,true, SlidesTarget.FRONT_GROUND.slides_position);
+
+        BigBird.init();
 
         // CV junk starts here
         int cameraMonitorViewId = hardwareMap.appContext
@@ -179,30 +170,51 @@ public class AprilTagAutoExample extends LinearOpMode
         /* Actually do something useful
          * (CV junk ends here)
          */
-        telemetry.addData("BigBird is about to initialize", troubleshooterID);
-        telemetry.update();
-        Hardware BigBird = new Hardware(hardwareMap, telemetry);
-        telemetry.addData("BigBird is initialized", troubleshooterID);
-        telemetry.update();
-        BigBird.grabber.closeClaw();
-        telemetry.addData("claw closed", troubleshooterID);
-        telemetry.update();
-        BigBird.grabber.rightGrabberFace();
-        telemetry.addData("wrist is righted", troubleshooterID);
-        telemetry.update();
-        BigBird.dt.driveForward(1.25, drivePower);
-        telemetry.addData("robot has driven forward", troubleshooterID);
-        telemetry.update();
 
+        /*
+         * Tiles are notated like on the coordinate grid.
+         * - bottom left tile is [1, 1]
+         * - bottom right tile is [6, 1]
+         * - top left tile is [1, 6]
+         * - top right tile is [6, 6]
+         *
+         * [x, y] - means center of tile
+         * [x1, y1] b [x2, y2] means between two tiles
+         */
+
+        //Navigate: [2, 1] --> [2, 3] --> [2, 3] b [3, 3]
+        cct.start();
+        // [2, 1] --> [2, 3]
+        BigBird.dt.driveForward(2.5, drivePower);
+        Thread.sleep(100);
+        // turn around
+        BigBird.dt.turnLeft(180, turnPower);
+        Thread.sleep(250);
+        // [2, 3] --> [2, 3] b [3, 3]
+        BigBird.dt.strafeLeft(.6, strafePower);
+        Thread.sleep(200);
+        BigBird.dt.driveBackward(.1, drivePower);
+        // deposit cone
+        Thread.sleep(2000);
+        cct.waiting = false;
+        Thread.sleep(postDepositWaitTime);
+        BigBird.dt.driveForward(.1, drivePower);
+        Thread.sleep(200);
+
+        // Navigate: [2, 3] b [3, 3] --> signal zone
+        // - Left zone (one dot): [2, 3] b [3, 3] --> [1, 3]
         if (tagOfInterest.id == leftID) {
-            BigBird.dt.strafeLeft(1.2, strafePower);
+            BigBird.dt.strafeRight(1.6, strafePower);
         }
-        else if (tagOfInterest == null || tagOfInterest.id == middleID) {
-            // go to middle zone
+        // - Middle zone (one dot): [2, 3] b [3, 3] --> [2, 3]
+        else if (tagOfInterest.id == middleID) {
+            BigBird.dt.strafeRight(0.6, strafePower);
         }
+        // - Right zone (one dot): [2, 3] b [3, 3] --> [3, 3]
         else if (tagOfInterest.id == rightID) {
-            BigBird.dt.strafeRight(1.2, strafePower);
+            BigBird.dt.strafeLeft(0.6, strafePower);
         }
+
     }
 
     void tagToTelemetry(AprilTagDetection detection)
@@ -214,5 +226,76 @@ public class AprilTagAutoExample extends LinearOpMode
         telemetry.addLine(String.format("Rotation Yaw: %.2f degrees", Math.toDegrees(detection.pose.yaw)));
         telemetry.addLine(String.format("Rotation Pitch: %.2f degrees", Math.toDegrees(detection.pose.pitch)));
         telemetry.addLine(String.format("Rotation Roll: %.2f degrees", Math.toDegrees(detection.pose.roll)));
+    }
+
+    // unused as of 1/25/23
+    public static class DriveThread extends Thread {
+
+        Hardware BigBird = null;
+        Drivetrain dt = null;
+        DcMotor FL = null;
+        DcMotor BL = null;
+        DcMotor FR = null;
+        DcMotor BR = null;
+
+        public DriveThread(Hardware bb) {
+            BigBird = bb;
+            dt = bb.dt;
+            FL = bb.dt.FL;
+            BL = bb.dt.BL;
+            FR = bb.dt.FR;
+            BR = bb.dt.BR;
+        }
+
+        @Override
+        public void run() {
+
+        }
+
+    }
+
+    public static class CycleConeThread extends Thread {
+
+        Hardware BigBird = null;
+        SlidesTarget slidesPosition = SlidesTarget.FRONT_GROUND;
+        volatile boolean waiting;
+        int coneDropDelay = 0; // time between slides reaching target position and cone being dropped (milliseconds)
+        static double slidesPowerUp = 0.8;
+        static double slidesPowerDown = 0.6;
+        int slidesResetPosition; // final slides position of the cycle, set in initialization
+
+        public CycleConeThread(Hardware b, boolean w, int srp) {
+            BigBird = b;
+            waiting = w;
+            slidesResetPosition = srp;
+        }
+
+        @Override
+        public void run() {
+            // move slides up, flip elbow and wrist
+            try {BigBird.flipElbowAndWrist(true);} catch (InterruptedException ignored) {}
+            BigBird.slides.setTargetPosition(SlidesTarget.BACK_HIGH.slides_position);
+            while (BigBird.slides.getCurrentPosition() < BigBird.slides.getTargetPosition()) {
+                BigBird.slides.setPower(slidesPowerUp);
+            }
+            BigBird.slides.setPower(0);
+
+            while (waiting) {} // wait for cue from drive thread to drop cone
+            BigBird.grabber.openClaw(); // drop cone
+            try {Thread.sleep(postDepositWaitTime);} catch (InterruptedException ignored) {} // wait a bit for the cone to drop before proceeding
+
+            // go back down and flip back to front
+            try {BigBird.flipElbowAndWrist(false);} catch (InterruptedException ignored) {}
+            BigBird.slides.setTargetPosition(0);
+            while (BigBird.slides.getCurrentPosition() > 0) {
+                BigBird.slides.setPower(slidesPowerDown);
+            }
+            BigBird.slides.setPower(0);
+        }
+
+        public void changeSlidesPosition() {
+            boolean increases = BigBird.slides.getCurrentPosition() < slidesPosition.slides_position;
+            BigBird.slides.setPower(0);
+        }
     }
 }

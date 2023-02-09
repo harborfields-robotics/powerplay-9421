@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.CV;
 
+import static org.firstinspires.ftc.teamcode.Hardware.troubleshooterID;
+
 import android.util.Log;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -23,10 +25,18 @@ public class BarcodeUtil {
         this.telemetry = telemetry;
         int cameraMonitorViewId = hardwareMap.appContext.getResources()
 			.getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance()
+        telemetry.addData("cameraMonitorViewId initialized", troubleshooterID);
+        telemetry.update();
+        webcam = OpenCvCameraFactory.getInstance() // program stops here
 			.createWebcam(hardwareMap.get(WebcamName.class, webcamName), cameraMonitorViewId);
+        telemetry.addData("webcam initialized", troubleshooterID);
+        telemetry.update();
         pipeline = new BarcodePositionDetector(telemetry);
+        telemetry.addData("pipeline initialized", troubleshooterID);
+        telemetry.update();
         webcam.setPipeline(pipeline);
+        telemetry.addData("webcam pipeline set", troubleshooterID);
+        telemetry.update();
     }
 
 

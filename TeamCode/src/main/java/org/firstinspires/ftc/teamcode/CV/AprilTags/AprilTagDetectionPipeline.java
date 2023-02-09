@@ -39,7 +39,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 
-class AprilTagDetectionPipeline extends OpenCvPipeline
+public class AprilTagDetectionPipeline extends OpenCvPipeline
 {
     private long nativeApriltagPtr;
     private Mat grey = new Mat();

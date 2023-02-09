@@ -8,8 +8,8 @@ public class Grabber {
 
     public Servo claw;
     public Servo wrist;
-    public static double claw_open = 0;
-    public static double claw_closed = 1;
+    public static double claw_open = 0.5;
+    public static double claw_closed = 0;
     public static double upright = 0;
     public static double upside_down = 1;
     boolean isClosed;

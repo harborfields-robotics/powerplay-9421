@@ -19,21 +19,23 @@ public class TeleOp_FieldCentricDriveTesting extends LinearOpMode {
 
         Hardware BigBird = new Hardware(hardwareMap, telemetry);
         BigBird.init();
-        waitForStart();
 
         BNO055IMU imu = hardwareMap.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         imu.initialize(parameters);
         // Technically this is the default, but specifying it is clearer
+        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+        // Without this, data retrieving from the IMU throws an exception
+
+        waitForStart();
+
+        if (isStopRequested()) return;
 
         while (opModeIsActive()) {
 
             double y  = gamepad1.left_stick_y;
             double x  = gamepad1.left_stick_x * 1.1; // accounts for imperfect strafing, allegedly
             double rx = gamepad1.right_stick_x;
-
-            parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
-            // Without this, data retrieving from the IMU throws an exception
 
             // read inverse IMU heading, as the IMU heading is clockwise positive and needs to be negated
             double botHeading = -imu.getAngularOrientation().firstAngle;
@@ -63,6 +65,12 @@ public class TeleOp_FieldCentricDriveTesting extends LinearOpMode {
             double BRpower = (rotY + rotX - rx) / denominator;
 
             BigBird.dt.setMotorPower(FLpower, BLpower, FRpower, BRpower);
+            telemetry.addData("FL power", FLpower);
+            telemetry.addData("BL power", BLpower);
+            telemetry.addData("FR power", FRpower);
+            telemetry.addData("BR power", BRpower);
+            telemetry.addData("imu angle", imu.getAngularOrientation().angleUnit);
+            telemetry.update();
         }
 
     }

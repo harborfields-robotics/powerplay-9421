@@ -19,8 +19,10 @@ public class Drivetrain {
     public DcMotor FR;
     public DcMotor BL;
     public DcMotor BR;
-    static int ticks_per_tile = 580; // constant for strafe methods
+    static int ticks_per_tile = 620; // constant for strafe methods
     static double strafe_constant = 1.3;
+    static int ticks_per_side_difference = 30;
+    static double ticks_per_degree = 7.45;
 
     Telemetry telemetry;
     // initializes motors
@@ -78,7 +80,7 @@ public class Drivetrain {
         return powers;
     }
 
-    public void strafeLeft(double num_tiles, double power) throws InterruptedException {
+    public void strafeLeft(double num_tiles, double power) {
         setMotorModes(STOP_AND_RESET_ENCODER);
         setMotorTargets((int) (-num_tiles * ticks_per_tile * strafe_constant), // FL
                         (int) (num_tiles  * ticks_per_tile * strafe_constant), // FR
@@ -87,7 +89,8 @@ public class Drivetrain {
         setMotorModes(RUN_TO_POSITION);
 
         setMotorPower(power, power, power, power);
-        while (FL.getCurrentPosition() > FL.getTargetPosition()) {
+        while (FL.getCurrentPosition() > FL.getTargetPosition() && BL.getCurrentPosition() < BL.getTargetPosition() && FR.getCurrentPosition() < FR.getTargetPosition() && BR.getCurrentPosition() > BR.getTargetPosition()) {
+            telemetry.addData("Robot is strafing left...        ", 11115);
             telemetry.addData("FL target: ", FL.getTargetPosition());
             telemetry.addData("BL target: ", BL.getTargetPosition());
             telemetry.addData("FR target: ", FR.getTargetPosition());
@@ -97,8 +100,6 @@ public class Drivetrain {
             telemetry.addData("FR position: ", FR.getCurrentPosition());
             telemetry.addData("BR position: ", BR.getCurrentPosition());
             telemetry.update();
-
-            Thread.sleep(10);
         }
         setMotorModes(RUN_WITHOUT_ENCODER);
         setMotorPower(0, 0, 0, 0);
@@ -107,33 +108,16 @@ public class Drivetrain {
         //drive(180, num_tiles, power);
     }
 
-    public void strafeRight(double num_tiles, double power) throws InterruptedException {
+    public void strafeRight(double num_tiles, double power) {
         setMotorModes(STOP_AND_RESET_ENCODER);
         setMotorTargets((int) (num_tiles  * ticks_per_tile * strafe_constant),
                         (int) (-num_tiles * ticks_per_tile * strafe_constant),
                         (int) (-num_tiles * ticks_per_tile * strafe_constant),
                         (int) (num_tiles  * ticks_per_tile * strafe_constant));
         setMotorModes(RUN_TO_POSITION);
-        setMotorPower(power, power, power, power);
-        while (FL.getCurrentPosition() < FL.getTargetPosition()) {
-            Thread.sleep(10);
-        }
-        setMotorModes(RUN_WITHOUT_ENCODER);
-        setMotorPower(0, 0, 0, 0);
-
-
-        //drive(0, num_tiles, power);
-    }
-
-    public void driveForward(double num_tiles, double power) throws InterruptedException {
-        setMotorModes(STOP_AND_RESET_ENCODER);
-        setMotorTargets((int) (num_tiles * ticks_per_tile),
-                        (int) (num_tiles * ticks_per_tile),
-                        (int) (num_tiles * ticks_per_tile),
-                        (int) (num_tiles * ticks_per_tile));
-        setMotorModes(RUN_TO_POSITION);
-        setMotorPower(power, power, power, power);
-        while (FL.getCurrentPosition() < FL.getTargetPosition()) {
+        while (FL.getCurrentPosition() < FL.getTargetPosition() && BL.getCurrentPosition() > BL.getTargetPosition() && FR.getCurrentPosition() > FR.getTargetPosition() && BR.getCurrentPosition() < BR.getTargetPosition()) {
+            setMotorPower(power, power, power, power);
+            telemetry.addData("Robot is strafing right...        ", 11115);
             telemetry.addData("FL target: ", FL.getTargetPosition());
             telemetry.addData("BL target: ", BL.getTargetPosition());
             telemetry.addData("FR target: ", FR.getTargetPosition());
@@ -142,30 +126,53 @@ public class Drivetrain {
             telemetry.addData("BL position: ", BL.getCurrentPosition());
             telemetry.addData("FR position: ", FR.getCurrentPosition());
             telemetry.addData("BR position: ", BR.getCurrentPosition());
-
             telemetry.update();
-            Thread.sleep(10);
         }
-        setMotorModes(RUN_WITHOUT_ENCODER);
         setMotorPower(0, 0, 0, 0);
+        setMotorModes(RUN_WITHOUT_ENCODER);
+
+
+        //drive(0, num_tiles, power);
+    }
+
+    public void driveForward(double num_tiles, double power) {
+        setMotorModes(STOP_AND_RESET_ENCODER);
+        setMotorTargets((int) (num_tiles * ticks_per_tile),
+                        (int) (num_tiles * ticks_per_tile),
+                        (int) (num_tiles * ticks_per_tile),
+                        (int) (num_tiles * ticks_per_tile));
+        setMotorModes(RUN_TO_POSITION);
+        setMotorPower(power, power, power, power);
+        while (FL.getCurrentPosition() < FL.getTargetPosition() && BL.getCurrentPosition() < BL.getTargetPosition() && FR.getCurrentPosition() < FR.getTargetPosition() && BR.getCurrentPosition() < BR.getTargetPosition()) {
+            telemetry.addData("FL target: ", FL.getTargetPosition());
+            telemetry.addData("BL target: ", BL.getTargetPosition());
+            telemetry.addData("FR target: ", FR.getTargetPosition());
+            telemetry.addData("BR target: ", BR.getTargetPosition());
+            telemetry.addData("FL position: ", FL.getCurrentPosition());
+            telemetry.addData("BL position: ", BL.getCurrentPosition());
+            telemetry.addData("FR position: ", FR.getCurrentPosition());
+            telemetry.addData("BR position: ", BR.getCurrentPosition());
+            telemetry.update();
+        }
+        setMotorPower(0, 0, 0, 0);
+        setMotorModes(RUN_WITHOUT_ENCODER);
 
 
         //drive(90, num_tiles, power);
     }
 
-    public void driveBackward(double num_tiles, double power) throws InterruptedException {
+    public void driveBackward(double num_tiles, double power) {
         setMotorModes(STOP_AND_RESET_ENCODER);
         setMotorTargets((int) (-num_tiles * ticks_per_tile),
                         (int) (-num_tiles * ticks_per_tile),
                         (int) (-num_tiles * ticks_per_tile),
                         (int) (-num_tiles * ticks_per_tile));
         setMotorModes(RUN_TO_POSITION);
-        setMotorPower(power, power, power, power);
-        while (FL.getCurrentPosition() > FL.getTargetPosition()) {
-            Thread.sleep(10);
+        while (FL.getCurrentPosition() > FL.getTargetPosition() && BL.getCurrentPosition() > BL.getTargetPosition() && FR.getCurrentPosition() > FR.getTargetPosition() && BR.getCurrentPosition() > BR.getTargetPosition()) {
+            setMotorPower(power, power, power, power);
         }
-        setMotorModes(RUN_WITHOUT_ENCODER);
         setMotorPower(0, 0, 0, 0);
+        setMotorModes(RUN_WITHOUT_ENCODER);
 
 
         //drive(270, num_tiles, power);
@@ -177,6 +184,53 @@ public class Drivetrain {
         FR.setMode(mode);
         BR.setMode(mode);
     }
+
+    public void smoothDriveForward(double num_tiles, double power) {
+        setMotorModes(STOP_AND_RESET_ENCODER);
+        setMotorTargets((int) (num_tiles * ticks_per_tile),
+                (int) (num_tiles * ticks_per_tile),
+                (int) (num_tiles * ticks_per_tile),
+                (int) (num_tiles * ticks_per_tile));
+        setMotorModes(RUN_TO_POSITION);
+
+        while (FL.getPower() < power && FL.getCurrentPosition() < FL.getTargetPosition()) {
+            setMotorPower(FL.getPower()+(power/10), FR.getPower()+(power/10), BL.getPower()+(power/10), BR.getPower()+(power/10));
+            try {
+                Thread.sleep(25);
+            } catch (InterruptedException e) {}
+        }
+        setMotorPower(power, power, power, power);
+
+        while (FL.getCurrentPosition() < FL.getTargetPosition() - (ticks_per_tile * 0.12)) {
+            telemetry.addData("FL target: ", FL.getTargetPosition());
+            telemetry.addData("BL target: ", BL.getTargetPosition());
+            telemetry.addData("FR target: ", FR.getTargetPosition());
+            telemetry.addData("BR target: ", BR.getTargetPosition());
+            telemetry.addData("FL position: ", FL.getCurrentPosition());
+            telemetry.addData("BL position: ", BL.getCurrentPosition());
+            telemetry.addData("FR position: ", FR.getCurrentPosition());
+            telemetry.addData("BR position: ", BR.getCurrentPosition());
+            telemetry.update();
+        }
+        setMotorPower(power, power, power, power);
+        while (FL.getPower() > 0 && FL.getCurrentPosition() < FL.getTargetPosition()) {
+            setMotorPower(FL.getPower()-(power/10), FR.getPower()-(power/10), BL.getPower()-(power/10), BR.getPower()-(power/10));
+            try {
+                Thread.sleep(25);
+            } catch (InterruptedException e) {}
+        }
+        //
+        // fixEncoderTicksDifferential(.2);
+        setMotorPower(0,0,0,0);
+
+
+        setMotorModes(RUN_WITHOUT_ENCODER);
+        setMotorPower(0, 0, 0, 0);
+
+
+        //drive(90, num_tiles, power);
+    }
+
 
     // DOES NOT WORK PROPERLY
     public void drive(double angle, double num_tiles, double power) throws InterruptedException {
@@ -196,6 +250,88 @@ public class Drivetrain {
         }
         setMotorPower(0,0,0,0);
         setMotorModes(RUN_WITHOUT_ENCODER);
+    }
+
+    public void fixEncoderTicksDifferential(double power) {
+        setMotorModes(RUN_USING_ENCODER);
+        setMotorTargets(FL.getTargetPosition() + ticks_per_side_difference,
+                           FR.getTargetPosition(),
+                        BL.getTargetPosition() + ticks_per_side_difference,
+                           BR.getTargetPosition());
+        setMotorModes(RUN_TO_POSITION);
+        while (FL.getCurrentPosition() != FL.getTargetPosition() && BL.getCurrentPosition() != BL.getTargetPosition() && FR.getCurrentPosition() != FR.getTargetPosition() && BR.getCurrentPosition() != BR.getTargetPosition()) {
+            setMotorPower(power, power, power, power);
+        }
+        setMotorPower(0,0,0,0);
+
+    }
+
+    public void turnLeft(int degrees, double power) {
+        resetMotorEncoders();
+        setMotorModes(RUN_USING_ENCODER);
+        setMotorTargets(FL.getCurrentPosition() - (int)(degrees * ticks_per_degree),
+                        FR.getCurrentPosition() + (int)(degrees * ticks_per_degree),
+                        BL.getCurrentPosition() - (int)(degrees * ticks_per_degree),
+                        BR.getCurrentPosition() + (int)(degrees * ticks_per_degree)
+        );
+        setMotorModes(RUN_TO_POSITION);
+        while (FL.getCurrentPosition() > FL.getTargetPosition() &&
+                BL.getCurrentPosition() > BL.getTargetPosition() &&
+                FR.getCurrentPosition() < FR.getTargetPosition() &&
+                BR.getCurrentPosition() < BR.getTargetPosition()
+        ) {
+            setMotorPower(power,power,power,power);
+            telemetry.addData(">> turnLeft() is running...    ", 11115);
+            telemetry.addData("FL target: ", FL.getTargetPosition());
+            telemetry.addData("BL target: ", BL.getTargetPosition());
+            telemetry.addData("FR target: ", FR.getTargetPosition());
+            telemetry.addData("BR target: ", BR.getTargetPosition());
+            telemetry.addData("FL position: ", FL.getCurrentPosition());
+            telemetry.addData("BL position: ", BL.getCurrentPosition());
+            telemetry.addData("FR position: ", FR.getCurrentPosition());
+            telemetry.addData("BR position: ", BR.getCurrentPosition());
+            telemetry.update();
+        }
+        setMotorPower(0,0,0,0);
+        setMotorModes(RUN_WITHOUT_ENCODER);
+    }
+
+    public void turnRight(int degrees, double power) {
+        resetMotorEncoders();
+        setMotorModes(RUN_USING_ENCODER);
+        setMotorTargets(FL.getCurrentPosition() + (int)(degrees * ticks_per_degree),
+                FR.getCurrentPosition() - (int)(degrees * ticks_per_degree),
+                BL.getCurrentPosition() + (int)(degrees * ticks_per_degree),
+                BR.getCurrentPosition() - (int)(degrees * ticks_per_degree)
+        );
+        setMotorModes(RUN_TO_POSITION);
+        while ( FL.getCurrentPosition() < FL.getTargetPosition() &&
+                BL.getCurrentPosition() < BL.getTargetPosition() &&
+                FR.getCurrentPosition() > FR.getTargetPosition() &&
+                BR.getCurrentPosition() > BR.getTargetPosition()
+        ) {
+            setMotorPower(power,power,power,power);
+            telemetry.addData(">> turnLeft() is running...    ", 11115);
+            telemetry.addData("FL target: ", FL.getTargetPosition());
+            telemetry.addData("BL target: ", BL.getTargetPosition());
+            telemetry.addData("FR target: ", FR.getTargetPosition());
+            telemetry.addData("BR target: ", BR.getTargetPosition());
+            telemetry.addData("FL position: ", FL.getCurrentPosition());
+            telemetry.addData("BL position: ", BL.getCurrentPosition());
+            telemetry.addData("FR position: ", FR.getCurrentPosition());
+            telemetry.addData("BR position: ", BR.getCurrentPosition());
+            telemetry.update();
+        }
+        setMotorPower(0,0,0,0);
+        setMotorModes(RUN_WITHOUT_ENCODER);
+    }
+
+    public void resetMotorEncoders() {
+        FL.setMode(STOP_AND_RESET_ENCODER);
+        BL.setMode(STOP_AND_RESET_ENCODER);
+        FR.setMode(STOP_AND_RESET_ENCODER);
+        BR.setMode(STOP_AND_RESET_ENCODER);
+
     }
 
 }

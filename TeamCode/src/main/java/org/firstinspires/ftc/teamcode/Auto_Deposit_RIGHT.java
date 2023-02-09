@@ -14,7 +14,7 @@ public class Auto_Deposit_RIGHT extends LinearOpMode {
         // return early so that it doesn't move
         double power = .4;
 
-        BigBird.slides.setTargetPosition(SlidesTarget.FRONT_HIGH.slides_position); // Move the slides to the highest target
+        //BigBird.slides.setTargetPosition(SlidesTarget.FRONT_HIGH.slides_position); // Move the slides to the highest target
         BigBird.flipElbowAndWrist(true);
         Thread.sleep(500);
 

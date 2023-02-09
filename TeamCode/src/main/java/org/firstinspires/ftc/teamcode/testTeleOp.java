@@ -39,7 +39,7 @@ public class testTeleOp extends LinearOpMode {
         return x > max ? max : (Math.max(x, min));
     }
 
-    static boolean smooth_controls = true;
+    static boolean smooth_controls = false;
     static boolean constant_controls = false;
 
     @Override
@@ -65,6 +65,7 @@ public class testTeleOp extends LinearOpMode {
             telemetry.addData("claw position: ", BigBird.grabber.claw.getPosition());
             telemetry.addData("wrist position: ", BigBird.grabber.wrist.getPosition());
             telemetry.addData("slides: ", BigBird.slides.getCurrentPosition());
+            telemetry.addData("slides target: ", BigBird.slides.getTargetPosition());
             telemetry.addData("elbow: ", BigBird.elbow1.getPosition());
 
             telemetry.update();
@@ -138,27 +139,16 @@ public class testTeleOp extends LinearOpMode {
                 }
                 else if (constant_controls) { // Move one tile in a cardinal direction
                     if (gamepad1.dpad_up) {
-                        try {
-                            BigBird.dt.driveForward(1, .8);
-                        } catch (InterruptedException e) {
-                        }
+                        BigBird.dt.driveForward(1, .8);
                     }
                     else if (gamepad1.dpad_down) {
-                        try {
-                            BigBird.dt.driveBackward(1, .8);
-                        } catch (InterruptedException e) {
-                        }
+                        BigBird.dt.driveBackward(1, .8);
                     }
                     else if (gamepad1.dpad_left) {
-                        try {
-                            BigBird.dt.strafeLeft(1, .8);
-                        } catch (InterruptedException e) {
-                        }
-                    } else if (gamepad1.dpad_right) {
-                        try {
-                            BigBird.dt.strafeRight(1, .8);
-                        } catch (InterruptedException e) {
-                        }
+                        BigBird.dt.strafeLeft(1, .8);
+                    }
+                    else if (gamepad1.dpad_right) {
+                        BigBird.dt.strafeRight(1, .8);
                     }
                 }
                 else { // Normal controls
@@ -183,48 +173,76 @@ public class testTeleOp extends LinearOpMode {
             boolean front = true;
             boolean elbow_changed = false;
             while (opModeIsActive()) {
+                // flip elbow and wrist
                 if (gamepad2.a && !elbow_changed) {
                     if (front) {
-                        BigBird.flipElbowAndWrist(true);
+                        try {BigBird.flipElbowAndWrist(true);} catch (InterruptedException e) {}
                         front = false;
                     }
                     else {
-                        BigBird.flipElbowAndWrist(false);
+                        try {BigBird.flipElbowAndWrist(false);} catch (InterruptedException e) {}
                         front = true;
                     }
                     elbow_changed = true;
                 }
-                else if (!gamepad2.a) {
-                    elbow_changed = false;
-                }
-                if (front) {
-                    if (gamepad2.dpad_up) {
-                        slidesPosition = SlidesTarget.FRONT_HIGH;
+
+                // move elbow up slightly
+                if (BigBird.slides.getCurrentPosition() <= 25 && front && slidesPosition == SlidesTarget.FRONT_GROUND) {
+                    if (gamepad2.right_trigger > 0.2) {
+                        BigBird.elbowMove(1 - (gamepad2.right_trigger * .08));
                     }
-                    else if (gamepad2.dpad_left) {
-                        slidesPosition = SlidesTarget.FRONT_MIDDLE;
-                    }
-                    else if (gamepad2.dpad_right) {
-                        slidesPosition = SlidesTarget.FRONT_LOW;
-                    }
-                    else if (gamepad2.dpad_down) {
-                        slidesPosition = SlidesTarget.FRONT_GROUND;
-                    }
-                }
-                else {
-                    if (gamepad2.dpad_up) {
-                        slidesPosition = SlidesTarget.BACK_HIGH;
-                    } else if (gamepad2.dpad_left) {
-                        slidesPosition = SlidesTarget.BACK_MIDDLE;
-                    } else if (gamepad2.dpad_right) {
-                        slidesPosition = SlidesTarget.BACK_LOW;
-                    } else if (gamepad2.dpad_down) {
-                        slidesPosition = SlidesTarget.BACK_GROUND;
+                    else {
+                        BigBird.elbowMove(Hardware.elbow_max);
                     }
                 }
 
+                else if (!gamepad2.a) {
+                    elbow_changed = false;
+                }
+                if (gamepad2.dpad_up) {
+                    slidesPosition = SlidesTarget.BACK_HIGH;
+                    if (front) {
+                        front = false;
+                    }
+                    try {
+                        BigBird.flipElbowAndWrist(true, slidesPosition.elbow_position);
+                    } catch (InterruptedException ignored) {
+                    }
+                } else if (gamepad2.dpad_left) {
+                    slidesPosition = SlidesTarget.BACK_MIDDLE;
+                    if (front) {
+                        front = false;
+                    }
+                    try {
+                        BigBird.flipElbowAndWrist(true, slidesPosition.elbow_position);
+                    } catch (InterruptedException ignored) {
+                    }
+                } else if (gamepad2.dpad_right) {
+                    slidesPosition = SlidesTarget.BACK_LOW;
+                    if (front) {
+                        front = false;
+                    }
+                    try {
+                        BigBird.flipElbowAndWrist(true, slidesPosition.elbow_position);
+                    } catch (InterruptedException ignored) {
+                    }
+                } else if (gamepad2.dpad_down) {
+                    slidesPosition = SlidesTarget.FRONT_GROUND;
+                    if (!front) {
+                        front = true;
+                    }
+                    try {
+
+                        BigBird.slides.setTargetPosition(slidesPosition.slides_position);
+                        Thread.sleep(600);
+                        BigBird.flipElbowAndWrist(false);
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+                BigBird.slides.setTargetPosition(slidesPosition.slides_position);
+
                 if (BigBird.slides.getCurrentPosition() > slidesPosition.slides_position) {
-                    BigBird.slides.setPower(.8);
+                    BigBird.slides.setPower(clamp(0.2 + (BigBird.slides.getCurrentPosition() / (double) (SlidesTarget.BACK_HIGH.slides_position)), 0, 1));
                 }
                 else if (BigBird.slides.getCurrentPosition() < slidesPosition.slides_position) {
                     BigBird.slides.setPower(1);
@@ -232,8 +250,6 @@ public class testTeleOp extends LinearOpMode {
                 else if (BigBird.slides.getCurrentPosition() == slidesPosition.slides_position) {
                     BigBird.slides.setPower(0);
                 }
-
-                BigBird.slides.setTargetPosition(slidesPosition.slides_position);
                 // BigBird.elbowMove(slidesPosition.elbow_position);
             }
 

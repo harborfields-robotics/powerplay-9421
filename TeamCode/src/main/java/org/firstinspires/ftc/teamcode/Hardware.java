@@ -7,9 +7,12 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.CV.AprilTags.AprilTagDetectionPipeline;
 import org.firstinspires.ftc.teamcode.CV.BarcodeUtil;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.util.Util;
+import org.openftc.apriltag.AprilTagDetection;
+import org.openftc.easyopencv.OpenCvCamera;
 // import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 
@@ -22,13 +25,16 @@ public class Hardware {
     public Grabber grabber = null;
     public static SlidesTarget slidesPosition = null;
     public SampleMecanumDrive drive;
+    public static double slidesAngle = Math.sqrt(2.0)/2;
     BarcodeUtil cvUtil;
 
 
     private Telemetry telemetry;
 
-    public static final double elbow_min = 0.40;
+    public static final double elbow_min = 0.5;
     public static final double elbow_max = 1.00;
+
+    public static final int troubleshooterID = 11115;
 
     public Hardware(HardwareMap ahwMap, Telemetry telemetry) {
         hwMap = ahwMap;
@@ -36,7 +42,9 @@ public class Hardware {
         dt = new Drivetrain(ahwMap, telemetry);
         drive = new SampleMecanumDrive(ahwMap);
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        cvUtil = new BarcodeUtil(hwMap, "Webcam1", telemetry);
+        telemetry.addData("cvUtil is about to initialize", troubleshooterID);
+        telemetry.update();
+        //cvUtil = new BarcodeUtil(hwMap, "Webcam1", telemetry);
 
         //dt = new org.firstinspires.ftc.teamcode.Drivetrain(hwMap);
 
@@ -59,9 +67,9 @@ public class Hardware {
 
         int slides_reset_position = 1000;
 
-        grabber.closeClaw();
         grabber.rightGrabberFace();
         Thread.sleep(500);
+        grabber.closeClaw();
         /*
         slides.setTargetPosition(slides_reset_position);
         slides.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -93,22 +101,54 @@ public class Hardware {
 
     }
 
+    public void stop() throws InterruptedException {
+
+    }
+
     public void elbowMove(double position)
     {
-        position = Util.clamp(position, elbow_min, elbow_max);
+        position = Util.clamp(position, 0, 1);
         elbow1.setPosition(position);
         elbow2.setPosition(position);
     }
 
-    public void flipElbowAndWrist(boolean raiseClaw) {
+    public void flipElbowAndWrist(boolean raiseClaw) throws InterruptedException {
         if (raiseClaw) {
             this.elbowMove(Hardware.elbow_min);
+            Thread.sleep(300);
             this.grabber.flipGrabberFace();
         } else {
+            Thread.sleep(750);
             this.elbowMove(Hardware.elbow_max);
             this.grabber.rightGrabberFace();
         }
 
+    }
+
+    public void flipElbowAndWrist(boolean raiseClaw, double newElbowPosition) throws InterruptedException {
+        this.elbowMove(newElbowPosition);
+        if (raiseClaw) {
+            Thread.sleep(300);
+            this.grabber.flipGrabberFace();
+        }
+        else {
+            this.grabber.rightGrabberFace();
+        }
+
+    }
+
+    public void autoDeposit(int slidesPosition, double elbowMaxPosition, double elbowFinalPosition) throws InterruptedException {
+        flipElbowAndWrist(true, elbowMaxPosition); // flip elbow up to target position
+        slides.setTargetPosition(slidesPosition); // extend slides to target position
+        slides.setPower(1);
+        Thread.sleep(2000);
+        grabber.openClaw(); // drop cone
+        Thread.sleep(250);
+        slides.setTargetPosition(0); // extend slides to target position
+
+        Thread.sleep(500);
+        flipElbowAndWrist(false, elbowFinalPosition);
+        Thread.sleep(800);
     }
 
     public Drivetrain getDrivetrain() {
