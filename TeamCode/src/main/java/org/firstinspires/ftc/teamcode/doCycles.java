@@ -26,7 +26,7 @@ public class doCycles extends LinearOpMode {
         BigBird.grabber.closeClaw();
 
         for (double grabberAngle = topConePosition; grabberAngle <= 1.00; grabberAngle += (1.00-topConePosition) / 5) {
-            BigBird.autoDeposit(0, SlidesTarget.BACK_HIGH.elbow_position, grabberAngle);
+            BigBird.autoDeposit(true,0, SlidesTarget.BACK_HIGH.elbow_position, grabberAngle);
             BigBird.grabber.closeClaw();
             Thread.sleep(500);
         }

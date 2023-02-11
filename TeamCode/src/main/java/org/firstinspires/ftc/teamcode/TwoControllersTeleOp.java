@@ -1,20 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.Hardware.elbow_min;
-import static org.firstinspires.ftc.teamcode.Hardware.slidesPosition;
-
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 //hardware
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-import kotlin.ranges.ClosedFloatingPointRange;
 
 
 /* As of Sunday, 12/11/2022
@@ -33,14 +24,14 @@ import kotlin.ranges.ClosedFloatingPointRange;
 
 
 @TeleOp
-public class testTeleOp extends LinearOpMode {
+public class TwoControllersTeleOp extends LinearOpMode {
 
     public double clamp(double x, double min, double max) {
         return x > max ? max : (Math.max(x, min));
     }
 
     static boolean smooth_controls = false;
-    static boolean constant_controls = false;
+    static boolean reverse_controls = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -95,24 +86,24 @@ public class testTeleOp extends LinearOpMode {
             while (opModeIsActive()) {
 
                 // smooth controls
-                if (gamepad1.left_bumper) {
+                if (gamepad1.back) {
                     smooth_controls = true;
-                    constant_controls = false;
+                    reverse_controls = false;
                 }
                 // default control mode
                 else if (gamepad1.right_bumper) {
                     smooth_controls = false;
-                    constant_controls = false;
+                    reverse_controls = false;
                 }
-                // "block" controls
-                else if (gamepad1.start) {
+                // reverse controls
+                else if (gamepad1.left_bumper) {
                     smooth_controls = false;
-                    constant_controls = true;
+                    reverse_controls = true;
                 }
 
                 double y = -gamepad1.left_stick_y; // Remember, this is reversed!
                 double x = gamepad1.left_stick_x;
-                double rx = gamepad1.right_stick_x;
+                double rx = (reverse_controls) ? -gamepad1.right_stick_x : gamepad1.right_stick_x;
                 double slow = .2;
 
                 if (gamepad1.left_trigger > .3) {
@@ -126,6 +117,13 @@ public class testTeleOp extends LinearOpMode {
                 double FRTargetSpeed = clamp(y - x - rx, -1, 1);
                 double BRTargetSpeed = clamp(y + x - rx, -1, 1);
 
+                if (reverse_controls) {
+                    FLTargetSpeed = clamp(-y + x + rx, -1, 1);
+                    BLTargetSpeed = clamp(-y - x + rx, -1, 1);
+                    FRTargetSpeed = clamp(-y - x - rx, -1, 1);
+                    BRTargetSpeed = clamp(-y + x - rx, -1, 1);
+                }
+
                 if (smooth_controls) { // Smooth acceleration & deceleration
                     adjustMotorPower(FL, FLTargetSpeed, speedIncrement);
                     adjustMotorPower(BL, BLTargetSpeed, speedIncrement);
@@ -137,6 +135,7 @@ public class testTeleOp extends LinearOpMode {
                         e.printStackTrace();
                     }
                 }
+                /*
                 else if (constant_controls) { // Move one tile in a cardinal direction
                     if (gamepad1.dpad_up) {
                         BigBird.dt.driveForward(1, .8);
@@ -151,6 +150,7 @@ public class testTeleOp extends LinearOpMode {
                         BigBird.dt.strafeRight(1, .8);
                     }
                 }
+                 */
                 else { // Normal controls
                     setMotorPowers(BigBird, FLTargetSpeed, BLTargetSpeed, FRTargetSpeed, BRTargetSpeed);
                 }
@@ -185,20 +185,13 @@ public class testTeleOp extends LinearOpMode {
                     }
                     elbow_changed = true;
                 }
-
-                // move elbow up slightly
-                if (BigBird.slides.getCurrentPosition() <= 25 && front && slidesPosition == SlidesTarget.FRONT_GROUND) {
-                    if (gamepad2.right_trigger > 0.2) {
-                        BigBird.elbowMove(1 - (gamepad2.right_trigger * .08));
-                    }
-                    else {
-                        BigBird.elbowMove(Hardware.elbow_max);
-                    }
-                }
-
                 else if (!gamepad2.a) {
                     elbow_changed = false;
                 }
+
+                // move elbow up or down slightly
+                BigBird.elbowMove(clamp(slidesPosition.elbow_position - (gamepad2.right_trigger * .07) + (gamepad2.left_trigger * .07), 0, 1));
+
                 if (gamepad2.dpad_up) {
                     slidesPosition = SlidesTarget.BACK_HIGH;
                     if (front) {
@@ -234,7 +227,6 @@ public class testTeleOp extends LinearOpMode {
                     try {
 
                         BigBird.slides.setTargetPosition(slidesPosition.slides_position);
-                        Thread.sleep(600);
                         BigBird.flipElbowAndWrist(false);
                     } catch (InterruptedException ignored) {
                     }

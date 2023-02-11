@@ -266,7 +266,7 @@ public class Drivetrain {
 
     }
 
-    public void turnLeft(int degrees, double power) {
+    public void turnLeft(double degrees, double power) {
         resetMotorEncoders();
         setMotorModes(RUN_USING_ENCODER);
         setMotorTargets(FL.getCurrentPosition() - (int)(degrees * ticks_per_degree),
@@ -296,7 +296,7 @@ public class Drivetrain {
         setMotorModes(RUN_WITHOUT_ENCODER);
     }
 
-    public void turnRight(int degrees, double power) {
+    public void turnRight(double degrees, double power) {
         resetMotorEncoders();
         setMotorModes(RUN_USING_ENCODER);
         setMotorTargets(FL.getCurrentPosition() + (int)(degrees * ticks_per_degree),

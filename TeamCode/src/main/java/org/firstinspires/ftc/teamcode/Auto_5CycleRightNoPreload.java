@@ -5,13 +5,13 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 @Autonomous
-public class Auto_5CycleRight extends LinearOpMode {
+public class Auto_5CycleRightNoPreload extends LinearOpMode {
 
     static int postDepositWaitTime = 200; // time between dropping cone and moving robot again (milliseconds)
     static double turnPower = 0.35;
-    static double drivePower = 0.6;
-    static double strafePower = 0.6;
-    static double topConePosition = 0.93;
+    static double drivePower = 0.35;
+    static double strafePower = 0.5;
+    static double topConePosition = 0.92;
     static int junctionOffsetAngle = 15;
     static int pauseTime = 100;
 
@@ -19,8 +19,6 @@ public class Auto_5CycleRight extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
         Hardware BigBird = new Hardware(hardwareMap, telemetry);
-        CycleConeThread cct = new CycleConeThread(BigBird,true, SlidesTarget.FRONT_GROUND.slides_position);
-
         BigBird.init();
         waitForStart();
 
@@ -37,47 +35,25 @@ public class Auto_5CycleRight extends LinearOpMode {
 
         // 1. Use camera on sleeve to find final parking position
 
-        // 2. Navigate: [5, 1] --> [5, 2]
-        BigBird.flipElbowAndWrist(true, Hardware.elbow_min); // flip elbow up to target position
-        BigBird.slides.setTargetPosition(SlidesTarget.BACK_HIGH.slides_position); // extend slides to target position
-        BigBird.slides.setPower(1);
+        // 2. Navigate to stack: [5, 1] --> [5, 3] --> [6, 3] --> precise position
 
-        BigBird.dt.driveBackward(1.5, drivePower);
-        Thread.sleep(pauseTime);
+        BigBird.grabber.openClaw();
+        BigBird.elbowMove(topConePosition);
 
-        // 3. Turn to face back towards right high junction
-        BigBird.dt.turnLeft(40, turnPower);
+        BigBird.dt.driveBackward(2.4, drivePower);
         Thread.sleep(pauseTime);
 
-        // 4. Deposit preloaded cone
-        Thread.sleep(300);
-        BigBird.grabber.openClaw(); // drop cone
-        Thread.sleep(250);
-
-        // 5. Navigate to stack: [5, 2] --> [5, 3] --> [6, 3] --> precise position
-        BigBird.slides.setTargetPosition(0); // extend slides to target position
-        BigBird.dt.turnRight(30, turnPower);
-        Thread.sleep(pauseTime);
-        BigBird.flipElbowAndWrist(false, topConePosition);
-        Thread.sleep(pauseTime);
-        BigBird.dt.driveBackward(0.65, drivePower);
+        BigBird.dt.turnLeft(95, turnPower);
         Thread.sleep(pauseTime);
 
-        BigBird.dt.turnLeft(90, turnPower);
-        Thread.sleep(pauseTime);
-        BigBird.dt.driveForward(0.8, drivePower);
-        Thread.sleep(pauseTime);
-        BigBird.dt.strafeLeft(0.25, strafePower);
-        Thread.sleep(pauseTime);
-        //BigBird.dt.turnRight(junctionOffsetAngle, drivePower);
-        //Thread.sleep(pauseTime);
-        BigBird.dt.driveForward(0.3, drivePower);
+        BigBird.dt.driveForward(1.4, drivePower*2/3);
         Thread.sleep(pauseTime);
         BigBird.grabber.closeClaw();
 
         // 6. Do 5 cycles
         for (double grabberAngle = topConePosition; grabberAngle <= 1.00; grabberAngle += (1.00-topConePosition) / 4.0) {
-            BigBird.autoDeposit(true,SlidesTarget.BACK_HIGH.slides_position + 300, SlidesTarget.BACK_HIGH.elbow_position - .08, grabberAngle);
+            BigBird.autoDeposit(true,SlidesTarget.BACK_HIGH.slides_position + 150, SlidesTarget.BACK_HIGH.elbow_position - .08, grabberAngle);
+            Thread.sleep(500);
             BigBird.grabber.closeClaw();
             Thread.sleep(300);
         }
@@ -129,6 +105,7 @@ public class Auto_5CycleRight extends LinearOpMode {
 
     }
 
+    /*
     public static class CycleConeThread extends Thread {
 
         Hardware BigBird = null;
@@ -173,4 +150,6 @@ public class Auto_5CycleRight extends LinearOpMode {
             BigBird.slides.setPower(0);
         }
     }
+
+     */
 }

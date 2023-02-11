@@ -17,7 +17,7 @@ import org.openftc.easyopencv.OpenCvCamera;
 
 
 public class Hardware {
-    HardwareMap hwMap = null;
+    public HardwareMap hwMap = null;
     public Drivetrain dt = null;
     DcMotor slides = null;
     Servo elbow1 = null;
@@ -31,7 +31,7 @@ public class Hardware {
 
     private Telemetry telemetry;
 
-    public static final double elbow_min = 0.5;
+    public static final double elbow_min = 0.515;
     public static final double elbow_max = 1.00;
 
     public static final int troubleshooterID = 11115;
@@ -118,7 +118,9 @@ public class Hardware {
             Thread.sleep(300);
             this.grabber.flipGrabberFace();
         } else {
-            Thread.sleep(750);
+            if (slides.getCurrentPosition() > 700) {
+                Thread.sleep(750);
+            }
             this.elbowMove(Hardware.elbow_max);
             this.grabber.rightGrabberFace();
         }
@@ -137,18 +139,33 @@ public class Hardware {
 
     }
 
-    public void autoDeposit(int slidesPosition, double elbowMaxPosition, double elbowFinalPosition) throws InterruptedException {
+    public void autoDeposit(boolean stack, int slidesPosition, double elbowMaxPosition, double elbowFinalPosition) throws InterruptedException {
         flipElbowAndWrist(true, elbowMaxPosition); // flip elbow up to target position
         slides.setTargetPosition(slidesPosition); // extend slides to target position
         slides.setPower(1);
-        Thread.sleep(2000);
-        grabber.openClaw(); // drop cone
-        Thread.sleep(250);
-        slides.setTargetPosition(0); // extend slides to target position
-
+        if (stack) {
+            dt.driveBackward(0.15, 0.5);
+            dt.turnRight(20, 0.4);
+            Thread.sleep(1500);
+        }
+        else {
+            Thread.sleep(2000);
+        }
+        elbowMove(elbowMaxPosition - .055);
         Thread.sleep(500);
-        flipElbowAndWrist(false, elbowFinalPosition);
-        Thread.sleep(800);
+        grabber.openClaw(); // drop cone
+        slides.setTargetPosition(0); // extend slides to target position
+        if (stack) {
+            dt.turnLeft(20, 0.4);
+            Thread.sleep(500);
+            flipElbowAndWrist(false, elbowFinalPosition);
+            dt.driveForward(0.15, 0.3);
+            Thread.sleep(500);
+        }
+        else {
+            Thread.sleep(600);
+            flipElbowAndWrist(false, elbowFinalPosition);
+        }
     }
 
     public Drivetrain getDrivetrain() {
